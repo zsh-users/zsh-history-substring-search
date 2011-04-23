@@ -85,10 +85,7 @@ zsh-history-substring-search-backward() {
   if [[ $WIDGET = *backward* ]]; then # we have pressed arrow-up
     if [[ ($F_match_number -ge 2 && $F_match_number -le $F_number_of_matches_plus_one) ]]; then
       let "F_match_number = $F_match_number - 1"
-      F_command_to_be_retrieved=$(fc -ln $F_matches[$F_match_number] $F_matches[$F_match_number])
-      F_command_to_be_retrieved=${F_command_to_be_retrieved//\\"n"/$'\n'}
-      F_command_to_be_retrieved=${F_command_to_be_retrieved//\\"t"/$'\t'}
-      # expand newlines and tabs in multi-line commands
+      F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
       BUFFER=$F_command_to_be_retrieved
       if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
         _zsh_highlight-zle-buffer
@@ -148,9 +145,7 @@ zsh-history-substring-search-backward() {
       fi
     elif [[ ($F_match_number -ge 0 && $F_match_number -le $F_number_of_matches_minus_one) ]]; then
       let "F_match_number = $F_match_number + 1"
-      F_command_to_be_retrieved=$(fc -ln $F_matches[$F_match_number] $F_matches[$F_match_number])
-      F_command_to_be_retrieved=${F_command_to_be_retrieved//\\"n"/$'\n'}
-      F_command_to_be_retrieved=${F_command_to_be_retrieved//\\"t"/$'\t'}
+      F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
       BUFFER=$F_command_to_be_retrieved
       if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
         _zsh_highlight-zle-buffer
