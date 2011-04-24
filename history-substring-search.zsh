@@ -43,7 +43,7 @@ F_ordinary_highlight="bg=magenta,fg=white,bold"
 F_out_of_matches_highlight="bg=red,fg=white,bold"
 F_max_buffer_size=250000
 
-zsh-history-substring-search-backward() {
+history-substring-search-backward() {
 
   emulate -L zsh
 
@@ -192,7 +192,7 @@ zsh-history-substring-search-backward() {
   # read -k -t 200 && zle -U $REPLY
 }
 
-zle -N zsh-history-substring-search-forward zsh-history-substring-search-backward
-zle -N zsh-history-substring-search-backward
-bindkey '\e[A' zsh-history-substring-search-backward
-bindkey '\e[B' zsh-history-substring-search-forward
+zle -N history-substring-search-forward history-substring-search-backward
+zle -N history-substring-search-backward
+bindkey '\e[A' history-substring-search-backward
+bindkey '\e[B' history-substring-search-forward
