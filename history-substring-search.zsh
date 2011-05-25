@@ -47,11 +47,6 @@ history-substring-search-begin() {
   setopt extendedglob
   zmodload -i zsh/parameter
 
-  # check if _zsh_highlight-zle-buffer is available
-  # so that calls to this function will not fail.
-  history_substring_search_zsh_highlighting_available=0
-  (( $+functions[_zsh_highlight-zle-buffer] )) && history_substring_search_zsh_highlighting_available=1
-
   if [[ ! (  ( ${WIDGET/backward/forward} = ${LASTWIDGET/backward/forward}) ||
     ( ${WIDGET/forward/backward} = ${LASTWIDGET/forward/backward}) ) ]]; then
     # $BUFFER contains the text that is in the command-line currently.
@@ -83,7 +78,7 @@ history-substring-search-begin() {
 history-substring-search-highlight() {
   # highlight $BUFFER using zsh-syntax-highlighting plugin
   # https://github.com/nicoulaj/zsh-syntax-highlighting
-  if [[ ((( $history_substring_search_zsh_highlighting_available == 1 ) && ( $+BUFFER < $HISTORY_SUBSTRING_SEARCH_MAX_BUFFER_SIZE) )) ]]; then
+  if [[ $+functions[_zsh_highlight-zle-buffer] -eq 1 && $+BUFFER -lt $HISTORY_SUBSTRING_SEARCH_MAX_BUFFER_SIZE ]]; then
     _zsh_highlight-zle-buffer
   fi
 
