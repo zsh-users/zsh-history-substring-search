@@ -47,34 +47,36 @@ history-substring-search-begin() {
   setopt extendedglob
   zmodload -i zsh/parameter
 
-  F_zsh_highlighting_available=0
-  (( $+functions[_zsh_highlight-zle-buffer] )) && F_zsh_highlighting_available=1
   # check if _zsh_highlight-zle-buffer is available
   # so that calls to this function will not fail.
+  F_zsh_highlighting_available=0
+  (( $+functions[_zsh_highlight-zle-buffer] )) && F_zsh_highlighting_available=1
 
   if [[ ! (  ( ${WIDGET/backward/forward} = ${LASTWIDGET/backward/forward}) ||
     ( ${WIDGET/forward/backward} = ${LASTWIDGET/forward/backward}) ) ]]; then
-    # set the type of highlighting
-    F_search=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\|" and "\\\("
-    F_search4later=${BUFFER}
+    F_search=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
+
     # for the purpose of highlighting we will also keep a version without
     # doubly-escaped meta characters
-    F_matches=(${(kon)history[(R)*${F_search}*]})
+    F_search4later=${BUFFER}
+
     # find all occurrences of the pattern *${seach}* within the history file
     # (k) turns it an array of line numbers. (on) seems to remove duplicates.
     # (on) are default options. they can be turned off by (ON).
-    F_number_of_matches=${#F_matches}
-    let "F_number_of_matches_plus_one = $F_number_of_matches + 1"
+    F_matches=(${(kon)history[(R)*${F_search}*]})
+
     # define the range of value that $F_match_number can take:
     # [0, $F_number_of_matches_plus_one]
+    F_number_of_matches=${#F_matches}
+    let "F_number_of_matches_plus_one = $F_number_of_matches + 1"
     let "F_number_of_matches_minus_one = $F_number_of_matches - 1"
-    # handy for later
+
+    # initial value of $F_match_number, which can initially only be decreased
+    # by ${WIDGET/forward/backward}
     let "F_match_number = $F_number_of_matches_plus_one"
-    # initial value of $F_match_number, which can initially only be decreased by
-    # ${WIDGET/forward/backward}
   fi
 }
 
@@ -85,8 +87,9 @@ history-substring-search-highlight() {
 }
 
 history-substring-search-end() {
+  # "zle .end-of-line" does not move CURSOR to the final end of line in
+  # multi-line buffers.
   CURSOR=${#BUFFER}
-  #"zle .end-of-line" does not move CURSOR to the final end of line in multi-line buffers.
 
   # for debugging purposes:
   # zle -R "mn: "$F_match_number" m#: "${#F_matches}
@@ -101,17 +104,18 @@ history-substring-search-backward() {
     F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
     BUFFER=$F_command_to_be_retrieved
     history-substring-search-highlight
-    if [[ $F_search4later != "" ]]; then # F_search string was not empty: highlight it
-      : ${(S)BUFFER##(#m)($F_search4later##)}
+    if [[ $F_search4later != "" ]]; then
+      # F_search string was not empty: highlight it
       # among other things the following expression yields a variable $MEND,
-      # which indicates the end position of the first occurrence of $F_search in
-      # $BUFFER
+      # which indicates the end position of the first occurrence of $F_search
+      # in $BUFFER
+      : ${(S)BUFFER##(#m)($F_search4later##)}
       let "F_my_mbegin = $MEND - $#F_search4later"
       region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
     fi
   else
     if [[ ($F_match_number -eq 1) ]]; then
-    # we will move out of the F_matches
+      # we will move out of the F_matches
       let "F_match_number = $F_match_number - 1"
       F_old_buffer_backward=$BUFFER
       BUFFER=$F_search4later
@@ -119,13 +123,13 @@ history-substring-search-backward() {
       if [[ $F_search4later != "" ]]; then
         : ${(S)BUFFER##(#m)($F_search4later##)}
         let "F_my_mbegin = $MEND - $#F_search4later"
+        # this is slightly more informative than highlighting that fish
+        # performs
         region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-        # this is slightly more informative than highlighting
-        # that fish performs
       fi
     else
       if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
-      # we will move back to the F_matches
+        # we will move back to the F_matches
         let "F_match_number = $F_match_number - 1"
         BUFFER=$F_old_buffer_forward
         history-substring-search-highlight
