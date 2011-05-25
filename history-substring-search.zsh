@@ -1,4 +1,22 @@
 #!/usr/bin/env zsh
+#
+# This is a clean-room implementation of the Fish[1] shell's history search
+# feature, where you can enter any part of any previous command and press
+# the UP and DOWN arrow keys to cycle through all matching commands.
+#
+# This was originally implemented by Peter Stephenson[2], who published it to
+# the ZSH users mailing list (thereby making it public domain) in September
+# 2009.  It was later revised by Guido van Steen and released under the BSD
+# license (see below) as part of the fizsh[3] project in January 2011.
+#
+# This was later extracted from fizsh[3] release 1.0.1, refactored heavily,
+# and repackaged as an OH MY ZSHELL plugin[4] by Suraj N. Kurapati in 2011.
+#
+# [1] http://fishshell.com
+# [2] http://www.zsh.org/mla/users/2009/msg00818.html
+# [3] http://sourceforge.net/projects/fizsh/
+# [4] https://github.com/robbyrussell/oh-my-zsh/pull/215
+#
 # -------------------------------------------------------------------------------------------------
 # Copyright (c) 2011 Guido van Steen
 # All rights reserved.
@@ -25,19 +43,6 @@
 # -------------------------------------------------------------------------------------------------
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
-#
-# This script can also be used as the widget zsh-history-substring-search-forward
-#
-# original version by Peter Stephenson (2009)
-# He called his version "history-substring-search-backward"
-# http://www.zsh.org/mla/users/2009/msg00818.html
-#
-# modifications by Guido van Steen (2009-2011)
-# written as a part of the Friendly Interactive ZSHell (fizsh)
-# http://sourceforge.net/projects/fizsh/
-#
-# /etc/fizsh/zsh-history-substring-search-backward
-#
 
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
