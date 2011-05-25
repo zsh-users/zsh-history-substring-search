@@ -56,7 +56,6 @@ history-substring-search-begin() {
     ( ${WIDGET/forward/backward} = ${LASTWIDGET/forward/backward}) ) ]]; then
     # set the type of highlighting
     F_search=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
-	echo $WIDGET >> /tmp/ok2
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\|" and "\\\("
