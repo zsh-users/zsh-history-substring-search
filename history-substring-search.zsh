@@ -47,8 +47,7 @@ history-substring-search-begin() {
   setopt extendedglob
   zmodload -i zsh/parameter
 
-  if [[ ! (  ( ${WIDGET/backward/forward} = ${LASTWIDGET/backward/forward}) ||
-    ( ${WIDGET/forward/backward} = ${LASTWIDGET/forward/backward}) ) ]]; then
+  if [[ $LASTWIDGET != history-substring-search-* ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\|" and "\\\("
