@@ -79,6 +79,12 @@ history-substring-search-begin() {
   fi
 }
 
+history-substring-search-highlight() {
+  if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
+    _zsh_highlight-zle-buffer
+  fi
+}
+
 history-substring-search-end() {
   CURSOR=${#BUFFER}
   #"zle .end-of-line" does not move CURSOR to the final end of line in multi-line buffers.
@@ -95,9 +101,7 @@ history-substring-search-backward() {
     let "F_match_number = $F_match_number - 1"
     F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
     BUFFER=$F_command_to_be_retrieved
-    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-      _zsh_highlight-zle-buffer
-    fi
+    history-substring-search-highlight
     if [[ $F_search4later != "" ]]; then # F_search string was not empty: highlight it
       : ${(S)BUFFER##(#m)($F_search4later##)}
       # among other things the following expression yields a variable $MEND,
@@ -112,9 +116,7 @@ history-substring-search-backward() {
       let "F_match_number = $F_match_number - 1"
       F_old_buffer_backward=$BUFFER
       BUFFER=$F_search4later
-      if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-        _zsh_highlight-zle-buffer
-      fi
+      history-substring-search-highlight
       if [[ $F_search4later != "" ]]; then
         : ${(S)BUFFER##(#m)($F_search4later##)}
         let "F_my_mbegin = $MEND - $#F_search4later"
@@ -127,9 +129,7 @@ history-substring-search-backward() {
       # we will move back to the F_matches
         let "F_match_number = $F_match_number - 1"
         BUFFER=$F_old_buffer_forward
-        if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-          _zsh_highlight-zle-buffer
-        fi
+        history-substring-search-highlight
         if [[ $F_search4later != "" ]]; then
           : ${(S)BUFFER##(#m)($F_search4later##)}
           let "F_my_mbegin = $MEND - $#F_search4later"
@@ -149,9 +149,7 @@ history-substring-search-forward() {
     let "F_match_number = $F_match_number"
     F_old_buffer_forward=$BUFFER
     BUFFER=$F_search4later
-    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-      _zsh_highlight-zle-buffer
-    fi
+    history-substring-search-highlight
     if [[ $F_search4later != "" ]]; then
       : ${(S)BUFFER##(#m)($F_search4later##)}
       let "F_my_mbegin = $MEND - $#F_search4later"
@@ -161,9 +159,7 @@ history-substring-search-forward() {
     let "F_match_number = $F_match_number + 1"
     F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
     BUFFER=$F_command_to_be_retrieved
-    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-      _zsh_highlight-zle-buffer
-    fi
+    history-substring-search-highlight
     if [[ $F_search4later != "" ]]; then
       : ${(S)BUFFER##(#m)($F_search4later##)}
       let "F_my_mbegin = $MEND - $#F_search4later"
@@ -174,9 +170,7 @@ history-substring-search-forward() {
       let "F_match_number = $F_match_number + 1"
       F_old_buffer_forward=$BUFFER
       BUFFER=$F_search4later
-      if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-        _zsh_highlight-zle-buffer
-      fi
+      history-substring-search-highlight
       if [[ $F_search4later != "" ]]; then
         : ${(S)BUFFER##(#m)($F_search4later##)}
         let "F_my_mbegin = $MEND - $#F_search4later"
@@ -186,9 +180,7 @@ history-substring-search-forward() {
       if [[ ($F_match_number -eq 0 ) ]]; then
         let "F_match_number = $F_match_number + 1"
         BUFFER=$F_old_buffer_backward
-        if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-          _zsh_highlight-zle-buffer
-        fi
+        history-substring-search-highlight
         if [[ $F_search4later != "" ]]; then
           : ${(S)BUFFER##(#m)($F_search4later##)}
           let "F_my_mbegin = $MEND - $#F_search4later"
