@@ -43,12 +43,8 @@ F_ordinary_highlight="bg=magenta,fg=white,bold"
 F_out_of_matches_highlight="bg=red,fg=white,bold"
 F_max_buffer_size=250000
 
-history-substring-search-backward() {
-
-  emulate -L zsh
-
+history-substring-search-begin() {
   setopt extendedglob
-
   zmodload -i zsh/parameter
 
   F_zsh_highlighting_available=0
@@ -81,58 +77,101 @@ history-substring-search-backward() {
     # initial value of $F_match_number, which can initially only be decreased by
     # ${WIDGET/forward/backward}
   fi
+}
 
-  if [[ $WIDGET = *backward* ]]; then # we have pressed arrow-up
-    if [[ ($F_match_number -ge 2 && $F_match_number -le $F_number_of_matches_plus_one) ]]; then
+history-substring-search-end() {
+  CURSOR=${#BUFFER}
+  #"zle .end-of-line" does not move CURSOR to the final end of line in multi-line buffers.
+
+  # for debugging purposes:
+  # zle -R "mn: "$F_match_number" m#: "${#F_matches}
+  # read -k -t 200 && zle -U $REPLY
+}
+
+history-substring-search-backward() {
+  history-substring-search-begin
+
+  if [[ ($F_match_number -ge 2 && $F_match_number -le $F_number_of_matches_plus_one) ]]; then
+    let "F_match_number = $F_match_number - 1"
+    F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
+    BUFFER=$F_command_to_be_retrieved
+    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
+      _zsh_highlight-zle-buffer
+    fi
+    if [[ $F_search4later != "" ]]; then # F_search string was not empty: highlight it
+      : ${(S)BUFFER##(#m)($F_search4later##)}
+      # among other things the following expression yields a variable $MEND,
+      # which indicates the end position of the first occurrence of $F_search in
+      # $BUFFER
+      let "F_my_mbegin = $MEND - $#F_search4later"
+      region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
+    fi
+  else
+    if [[ ($F_match_number -eq 1) ]]; then
+    # we will move out of the F_matches
       let "F_match_number = $F_match_number - 1"
-      F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
-      BUFFER=$F_command_to_be_retrieved
+      F_old_buffer_backward=$BUFFER
+      BUFFER=$F_search4later
       if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
         _zsh_highlight-zle-buffer
       fi
-      if [[ $F_search4later != "" ]]; then # F_search string was not empty: highlight it
+      if [[ $F_search4later != "" ]]; then
         : ${(S)BUFFER##(#m)($F_search4later##)}
-        # among other things the following expression yields a variable $MEND,
-        # which indicates the end position of the first occurrence of $F_search in
-        # $BUFFER
         let "F_my_mbegin = $MEND - $#F_search4later"
-        region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
+        region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
+        # this is slightly more informative than highlighting
+        # that fish performs
       fi
     else
-      if [[ ($F_match_number -eq 1) ]]; then
-      # we will move out of the F_matches
+      if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
+      # we will move back to the F_matches
         let "F_match_number = $F_match_number - 1"
-        F_old_buffer_backward=$BUFFER
-        BUFFER=$F_search4later
+        BUFFER=$F_old_buffer_forward
         if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
           _zsh_highlight-zle-buffer
         fi
         if [[ $F_search4later != "" ]]; then
           : ${(S)BUFFER##(#m)($F_search4later##)}
           let "F_my_mbegin = $MEND - $#F_search4later"
-          region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-          # this is slightly more informative than highlighting
-          # that fish performs
-        fi
-      else
-        if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
-        # we will move back to the F_matches
-          let "F_match_number = $F_match_number - 1"
-          BUFFER=$F_old_buffer_forward
-          if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-            _zsh_highlight-zle-buffer
-          fi
-          if [[ $F_search4later != "" ]]; then
-            : ${(S)BUFFER##(#m)($F_search4later##)}
-            let "F_my_mbegin = $MEND - $#F_search4later"
-            region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-          fi
+          region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
         fi
       fi
     fi
-  else # arrow-down
-    if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
-      let "F_match_number = $F_match_number"
+  fi
+
+  history-substring-search-end
+}
+
+history-substring-search-forward() {
+  history-substring-search-begin
+
+  if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
+    let "F_match_number = $F_match_number"
+    F_old_buffer_forward=$BUFFER
+    BUFFER=$F_search4later
+    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
+      _zsh_highlight-zle-buffer
+    fi
+    if [[ $F_search4later != "" ]]; then
+      : ${(S)BUFFER##(#m)($F_search4later##)}
+      let "F_my_mbegin = $MEND - $#F_search4later"
+      region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
+    fi
+  elif [[ ($F_match_number -ge 0 && $F_match_number -le $F_number_of_matches_minus_one) ]]; then
+    let "F_match_number = $F_match_number + 1"
+    F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
+    BUFFER=$F_command_to_be_retrieved
+    if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
+      _zsh_highlight-zle-buffer
+    fi
+    if [[ $F_search4later != "" ]]; then
+      : ${(S)BUFFER##(#m)($F_search4later##)}
+      let "F_my_mbegin = $MEND - $#F_search4later"
+      region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
+    fi
+  else
+    if [[ ($F_match_number -eq $F_number_of_matches ) ]]; then
+      let "F_match_number = $F_match_number + 1"
       F_old_buffer_forward=$BUFFER
       BUFFER=$F_search4later
       if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
@@ -143,56 +182,27 @@ history-substring-search-backward() {
         let "F_my_mbegin = $MEND - $#F_search4later"
         region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
       fi
-    elif [[ ($F_match_number -ge 0 && $F_match_number -le $F_number_of_matches_minus_one) ]]; then
-      let "F_match_number = $F_match_number + 1"
-      F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
-      BUFFER=$F_command_to_be_retrieved
-      if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-        _zsh_highlight-zle-buffer
-      fi
-      if [[ $F_search4later != "" ]]; then
-        : ${(S)BUFFER##(#m)($F_search4later##)}
-        let "F_my_mbegin = $MEND - $#F_search4later"
-        region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-      fi
     else
-      if [[ ($F_match_number -eq $F_number_of_matches ) ]]; then
+      if [[ ($F_match_number -eq 0 ) ]]; then
         let "F_match_number = $F_match_number + 1"
-        F_old_buffer_forward=$BUFFER
-        BUFFER=$F_search4later
+        BUFFER=$F_old_buffer_backward
         if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
           _zsh_highlight-zle-buffer
         fi
         if [[ $F_search4later != "" ]]; then
           : ${(S)BUFFER##(#m)($F_search4later##)}
           let "F_my_mbegin = $MEND - $#F_search4later"
-          region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-        fi
-      else
-        if [[ ($F_match_number -eq 0 ) ]]; then
-          let "F_match_number = $F_match_number + 1"
-          BUFFER=$F_old_buffer_backward
-          if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
-            _zsh_highlight-zle-buffer
-          fi
-          if [[ $F_search4later != "" ]]; then
-            : ${(S)BUFFER##(#m)($F_search4later##)}
-            let "F_my_mbegin = $MEND - $#F_search4later"
-            region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-          fi
+          region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
         fi
       fi
     fi
   fi
-  CURSOR=${#BUFFER}
-  #"zle .end-of-line" does not move CURSOR to the final end of line in multi-line buffers.
 
-  # for debugging purposes:
-  # zle -R "mn: "$F_match_number" m#: "${#F_matches}
-  # read -k -t 200 && zle -U $REPLY
+  history-substring-search-end
 }
 
-zle -N history-substring-search-forward history-substring-search-backward
 zle -N history-substring-search-backward
+zle -N history-substring-search-forward
+
 bindkey '\e[A' history-substring-search-backward
 bindkey '\e[B' history-substring-search-forward
