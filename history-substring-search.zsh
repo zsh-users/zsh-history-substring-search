@@ -41,7 +41,6 @@
 
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
-HISTORY_SUBSTRING_SEARCH_MAX_BUFFER_SIZE=250000
 
 history-substring-search-begin() {
   setopt extendedglob
@@ -77,7 +76,7 @@ history-substring-search-begin() {
 history-substring-search-highlight() {
   # highlight $BUFFER using zsh-syntax-highlighting plugin
   # https://github.com/nicoulaj/zsh-syntax-highlighting
-  if [[ $+functions[_zsh_highlight-zle-buffer] -eq 1 && $+BUFFER -lt $HISTORY_SUBSTRING_SEARCH_MAX_BUFFER_SIZE ]]; then
+  if [[ $+functions[_zsh_highlight-zle-buffer] -eq 1 ]]; then
     _zsh_highlight-zle-buffer
   fi
 
