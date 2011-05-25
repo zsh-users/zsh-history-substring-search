@@ -81,8 +81,21 @@ history-substring-search-begin() {
 }
 
 history-substring-search-highlight() {
+  # highlight $BUFFER using zsh-syntax-highlighting plugin
+  # https://github.com/nicoulaj/zsh-syntax-highlighting
   if [[ ((( $F_zsh_highlighting_available == 1 ) && ( $+BUFFER < $F_max_buffer_size) )) ]]; then
     _zsh_highlight-zle-buffer
+  fi
+
+  if [[ $F_search4later != "" ]]; then
+    # F_search string was not empty: highlight it
+    # among other things, the following expression yields a variable $MEND,
+    # which indicates the end position of the first occurrence of $F_search
+    # in $BUFFER
+    : ${(S)BUFFER##(#m)($F_search4later##)}
+    let "F_my_mbegin = $MEND - $#F_search4later"
+    # this is slightly more informative than highlighting that fish performs
+    region_highlight=("$F_my_mbegin $MEND $1")
   fi
 }
 
@@ -103,41 +116,20 @@ history-substring-search-backward() {
     let "F_match_number = $F_match_number - 1"
     F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
     BUFFER=$F_command_to_be_retrieved
-    history-substring-search-highlight
-    if [[ $F_search4later != "" ]]; then
-      # F_search string was not empty: highlight it
-      # among other things the following expression yields a variable $MEND,
-      # which indicates the end position of the first occurrence of $F_search
-      # in $BUFFER
-      : ${(S)BUFFER##(#m)($F_search4later##)}
-      let "F_my_mbegin = $MEND - $#F_search4later"
-      region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-    fi
+    history-substring-search-highlight $F_ordinary_highlight
   else
     if [[ ($F_match_number -eq 1) ]]; then
       # we will move out of the F_matches
       let "F_match_number = $F_match_number - 1"
       F_old_buffer_backward=$BUFFER
       BUFFER=$F_search4later
-      history-substring-search-highlight
-      if [[ $F_search4later != "" ]]; then
-        : ${(S)BUFFER##(#m)($F_search4later##)}
-        let "F_my_mbegin = $MEND - $#F_search4later"
-        # this is slightly more informative than highlighting that fish
-        # performs
-        region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-      fi
+      history-substring-search-highlight $F_out_of_matches_highlight
     else
       if [[ ($F_match_number -eq $F_number_of_matches_plus_one ) ]]; then
         # we will move back to the F_matches
         let "F_match_number = $F_match_number - 1"
         BUFFER=$F_old_buffer_forward
-        history-substring-search-highlight
-        if [[ $F_search4later != "" ]]; then
-          : ${(S)BUFFER##(#m)($F_search4later##)}
-          let "F_my_mbegin = $MEND - $#F_search4later"
-          region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-        fi
+        history-substring-search-highlight $F_ordinary_highlight
       fi
     fi
   fi
@@ -152,43 +144,23 @@ history-substring-search-forward() {
     let "F_match_number = $F_match_number"
     F_old_buffer_forward=$BUFFER
     BUFFER=$F_search4later
-    history-substring-search-highlight
-    if [[ $F_search4later != "" ]]; then
-      : ${(S)BUFFER##(#m)($F_search4later##)}
-      let "F_my_mbegin = $MEND - $#F_search4later"
-      region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-    fi
+    history-substring-search-highlight $F_out_of_matches_highlight
   elif [[ ($F_match_number -ge 0 && $F_match_number -le $F_number_of_matches_minus_one) ]]; then
     let "F_match_number = $F_match_number + 1"
     F_command_to_be_retrieved=$history[$F_matches[$F_match_number]]
     BUFFER=$F_command_to_be_retrieved
-    history-substring-search-highlight
-    if [[ $F_search4later != "" ]]; then
-      : ${(S)BUFFER##(#m)($F_search4later##)}
-      let "F_my_mbegin = $MEND - $#F_search4later"
-      region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-    fi
+    history-substring-search-highlight $F_ordinary_highlight
   else
     if [[ ($F_match_number -eq $F_number_of_matches ) ]]; then
       let "F_match_number = $F_match_number + 1"
       F_old_buffer_forward=$BUFFER
       BUFFER=$F_search4later
-      history-substring-search-highlight
-      if [[ $F_search4later != "" ]]; then
-        : ${(S)BUFFER##(#m)($F_search4later##)}
-        let "F_my_mbegin = $MEND - $#F_search4later"
-        region_highlight=("$F_my_mbegin $MEND $F_out_of_matches_highlight")
-      fi
+      history-substring-search-highlight $F_out_of_matches_highlight
     else
       if [[ ($F_match_number -eq 0 ) ]]; then
         let "F_match_number = $F_match_number + 1"
         BUFFER=$F_old_buffer_backward
-        history-substring-search-highlight
-        if [[ $F_search4later != "" ]]; then
-          : ${(S)BUFFER##(#m)($F_search4later##)}
-          let "F_my_mbegin = $MEND - $#F_search4later"
-          region_highlight=("$F_my_mbegin $MEND $F_ordinary_highlight")
-        fi
+        history-substring-search-highlight $F_ordinary_highlight
       fi
     fi
   fi
