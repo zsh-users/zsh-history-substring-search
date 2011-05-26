@@ -79,6 +79,9 @@ history-substring-search-begin() {
 }
 
 history-substring-search-highlight() {
+  # clear previously applied search query highlighting
+  region_highlight=()
+
   # highlight $BUFFER using zsh-syntax-highlighting plugin
   # https://github.com/nicoulaj/zsh-syntax-highlighting
   if [[ $+functions[_zsh_highlight-zle-buffer] -eq 1 ]]; then
@@ -93,7 +96,7 @@ history-substring-search-highlight() {
     : ${(S)BUFFER##(#m)($history_substring_search_query##)}
     let "history_substring_search_query_mbegin = $MEND - $#history_substring_search_query"
     # this is slightly more informative than highlighting that fish performs
-    region_highlight=("$history_substring_search_query_mbegin $MEND $1")
+    region_highlight+=("$history_substring_search_query_mbegin $MEND $1")
   fi
 }
 
