@@ -55,16 +55,16 @@ history-substring-search-begin() {
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\|" and "\\\("
-    history_substring_search_search=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
+    history_substring_search_query_escaped=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
 
     # for the purpose of highlighting we will also keep a version without
     # doubly-escaped meta characters
-    history_substring_search_search4later=${BUFFER}
+    history_substring_search_query=${BUFFER}
 
     # find all occurrences of the pattern *${seach}* within the history file
     # (k) turns it an array of line numbers. (on) seems to remove duplicates.
     # (on) are default options. they can be turned off by (ON).
-    history_substring_search_matches=(${(kon)history[(R)*${history_substring_search_search}*]})
+    history_substring_search_matches=(${(kon)history[(R)*${history_substring_search_query_escaped}*]})
 
     # define the range of value that $history_substring_search_match_number
     # can take: [0, $history_substring_search_number_of_matches_plus_one]
@@ -85,15 +85,15 @@ history-substring-search-highlight() {
     _zsh_highlight-zle-buffer
   fi
 
-  if [[ $history_substring_search_search4later != "" ]]; then
-    # history_substring_search_search string was not empty: highlight it
+  if [[ $history_substring_search_query != "" ]]; then
+    # history_substring_search_query_escaped string was not empty: highlight it
     # among other things, the following expression yields a variable $MEND,
     # which indicates the end position of the first occurrence of
-    # $history_substring_search_search in $BUFFER
-    : ${(S)BUFFER##(#m)($history_substring_search_search4later##)}
-    let "history_substring_search_my_mbegin = $MEND - $#history_substring_search_search4later"
+    # $history_substring_search_query_escaped in $BUFFER
+    : ${(S)BUFFER##(#m)($history_substring_search_query##)}
+    let "history_substring_search_query_mbegin = $MEND - $#history_substring_search_query"
     # this is slightly more informative than highlighting that fish performs
-    region_highlight=("$history_substring_search_my_mbegin $MEND $1")
+    region_highlight=("$history_substring_search_query_mbegin $MEND $1")
   fi
 }
 
@@ -120,7 +120,7 @@ history-substring-search-backward() {
       # we will move out of the history_substring_search_matches
       let "history_substring_search_match_number = $history_substring_search_match_number - 1"
       history_substring_search_old_buffer_backward=$BUFFER
-      BUFFER=$history_substring_search_search4later
+      BUFFER=$history_substring_search_query
       history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
     else
       if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
@@ -141,7 +141,7 @@ history-substring-search-forward() {
   if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
     let "history_substring_search_match_number = $history_substring_search_match_number"
     history_substring_search_old_buffer_forward=$BUFFER
-    BUFFER=$history_substring_search_search4later
+    BUFFER=$history_substring_search_query
     history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
   elif [[ $history_substring_search_match_number -ge 0 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_minus_one ]]; then
     let "history_substring_search_match_number = $history_substring_search_match_number + 1"
@@ -152,7 +152,7 @@ history-substring-search-forward() {
     if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches ]]; then
       let "history_substring_search_match_number = $history_substring_search_match_number + 1"
       history_substring_search_old_buffer_forward=$BUFFER
-      BUFFER=$history_substring_search_search4later
+      BUFFER=$history_substring_search_query
       history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
     else
       if [[ $history_substring_search_match_number -eq 0 ]]; then
