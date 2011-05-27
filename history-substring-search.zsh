@@ -45,7 +45,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 setopt extendedglob
-zmodload -i zsh/parameter
+zmodload -F zsh/parameter
 
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
