@@ -54,14 +54,14 @@ history-substring-search-begin() {
   if [[ $LASTWIDGET != history-substring-search-* ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
-    # so that they become "\\\|" and "\\\("
+    # so that they become "\\\(" and "\\\)"
     history_substring_search_query_escaped=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
 
     # for the purpose of highlighting we will also keep a version without
     # doubly-escaped meta characters
     history_substring_search_query=${BUFFER}
 
-    # find all occurrences of the pattern *${seach}* within the history file
+    # find all occurrences of the pattern *${query}* within the history file
     # (k) turns it an array of line numbers. (on) seems to remove duplicates.
     # (on) are default options. they can be turned off by (ON).
     history_substring_search_matches=(${(kon)history[(R)*${history_substring_search_query_escaped}*]})
