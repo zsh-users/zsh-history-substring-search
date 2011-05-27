@@ -44,13 +44,13 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
+setopt extendedglob
+zmodload -i zsh/parameter
+
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 
 history-substring-search-begin() {
-  setopt extendedglob
-  zmodload -i zsh/parameter
-
   if [[ $LASTWIDGET != history-substring-search-* ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
