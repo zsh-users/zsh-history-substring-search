@@ -64,7 +64,7 @@ history-substring-search-begin() {
     # find all occurrences of the pattern *${query}* within the history file
     # (k) turns it an array of line numbers. (on) seems to remove duplicates.
     # (on) are default options. they can be turned off by (ON).
-    history_substring_search_matches=(${(kon)history[(R)*${history_substring_search_query_escaped}*]})
+    history_substring_search_matches=(${(kon)history[(R)(#i)*${history_substring_search_query_escaped}*]})
 
     # define the range of value that $history_substring_search_match_number
     # can take: [0, $history_substring_search_number_of_matches_plus_one]
@@ -93,7 +93,7 @@ history-substring-search-highlight() {
     # among other things, the following expression yields a variable $MEND,
     # which indicates the end position of the first occurrence of
     # $history_substring_search_query_escaped in $BUFFER
-    : ${(S)BUFFER##(#m)($history_substring_search_query##)}
+    : ${(S)BUFFER##(#mi)($history_substring_search_query##)}
     let "history_substring_search_query_mbegin = $MEND - $#history_substring_search_query"
     # this is slightly more informative than highlighting that fish performs
     region_highlight+=("$history_substring_search_query_mbegin $MEND $1")
