@@ -51,7 +51,7 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 
 history-substring-search-begin() {
-  if [[ $LASTWIDGET != history-substring-search-* ]]; then
+  if [[ $LASTWIDGET != history-substring-search-* && (-z $BUFFER || $BUFFER != $history_substring_search_result) ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)"
@@ -88,7 +88,7 @@ history-substring-search-highlight() {
     _zsh_highlight-zle-buffer
   fi
 
-  if [[ $history_substring_search_query != "" ]]; then
+  if [[ -n $history_substring_search_query ]]; then
     # history_substring_search_query_escaped string was not empty: highlight it
     # among other things, the following expression yields a variable $MEND,
     # which indicates the end position of the first occurrence of
@@ -101,6 +101,8 @@ history-substring-search-highlight() {
 }
 
 history-substring-search-end() {
+  history_substring_search_result=$BUFFER
+
   # "zle .end-of-line" does not move CURSOR to the final end of line in
   # multi-line buffers.
   CURSOR=${#BUFFER}
