@@ -50,32 +50,10 @@ zmodload -F zsh/parameter
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 
-cursur-to-move-up-in-multi-line-buffer() {
-  # First create XLBUFFER (i.e. Xtended LBUFFER). Add an X before the cursor, so that
-  # we can later detect whether there is a newline immediately before the current cursor.
-  buflines=(${(f)BUFFER})
-  XLBUFFER=$LBUFFER"x"
-  xlbuflines=(${(f)XLBUFFER})
-  cursur_to_move_up_in_multi_line_buffer=0
-  [[ $#buflines -gt 1 && $#xlbuflines -ne 1 && $#BUFFER != $#LBUFFER ]] && cursur_to_move_up_in_multi_line_buffer=1
-}
-
-cursur-to-move-down-in-multi-line-buffer() {
-  # First create XRBUFFER (i.e. Xtended RBUFFER). Add an X after the cursor, so that
-  # we can later detect whether there is a newline immediately behind the current cursor.
-  buflines=(${(f)BUFFER})
-  XRBUFFER="x"$RBUFFER
-  xrbuflines=(${(f)XRBUFFER})
-  cursur_to_move_down_in_multi_line_buffer=0
-  [[ $#buflines -gt 1 && $#xrbuflines -ne 1 && $#BUFFER != $#LBUFFER ]] && cursur_to_move_down_in_multi_line_buffer=1
-}
-
 history-substring-search-begin() {
-  # use the previous "$history_substring_search_result" by default
-  history_new_search=0
-  [[ $BUFFER == "" ]] && history_new_search=1
-  [[ $BUFFER != $history_substring_search_result ]] && history_new_search=1
-  if [[ $history_new_search -eq 1 ]]; then
+  # continue using the previous "$history_substring_search_result" by default,
+  # unless the current query was cleared or a new/different query was entered
+  if [[ -z $BUFFER || $BUFFER != $history_substring_search_result ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)"
@@ -129,7 +107,8 @@ history-substring-search-end() {
 
   # "zle .end-of-line" does not move CURSOR to the final end of line in
   # multi-line buffers.
-  [[ $cursor_just_moved_in_multiline_buffer -eq 0 ]] && CURSOR=${#BUFFER}
+  [[ $history_substring_search_move_cursor_eol == true ]] && CURSOR=${#BUFFER}
+
   # for debugging purposes:
   #zle -R "mn: "$history_substring_search_match_number" m#: "${#history_substring_search_matches}
   #read -k -t 200 && zle -U $REPLY
@@ -138,11 +117,18 @@ history-substring-search-end() {
 history-substring-search-backward() {
   history-substring-search-begin
 
-  # the following function sets the variable "$cursur_to_move_up_in_multi_line_buffer", which will be used one line later.
-  cursur-to-move-up-in-multi-line-buffer
+  # check if the UP arrow was pressed to move cursor in multi-line buffer:
+  # First create XLBUFFER (i.e. Xtended LBUFFER). Add an X before the cursor,
+  # so that we can later detect whether there is a newline immediately before
+  # the current cursor.
+  buflines=(${(f)BUFFER})
+  local XLBUFFER=$LBUFFER"x"
+  xlbuflines=(${(f)XLBUFFER})
 
-  if [[ $cursur_to_move_up_in_multi_line_buffer == 0 ]]; then
-
+  if [[ $#buflines -gt 1 && $#xlbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
+    up-line-or-history
+    history_substring_search_move_cursor_eol=false
+  else
     if [[ $history_substring_search_match_number -ge 2 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_plus_one ]]; then
       let "history_substring_search_match_number = $history_substring_search_match_number - 1"
       history_substring_search_command_to_be_retrieved=$history[$history_substring_search_matches[$history_substring_search_match_number]]
@@ -164,12 +150,7 @@ history-substring-search-backward() {
         fi
       fi
     fi
-    # make sure the cursor will move to the end in this case
-    cursor_just_moved_in_multiline_buffer=0
-  else
-    up-line-or-history
-    # prevent the cursor from moving to the end in this case
-    cursor_just_moved_in_multiline_buffer=1
+    history_substring_search_move_cursor_eol=true
   fi
 
   history-substring-search-end
@@ -178,9 +159,18 @@ history-substring-search-backward() {
 history-substring-search-forward() {
   history-substring-search-begin
 
-  cursur-to-move-down-in-multi-line-buffer
+  # check if the DOWN arrow was pressed to move cursor in multi-line buffer:
+  # First create XRBUFFER (i.e. Xtended RBUFFER). Add an X after the cursor,
+  # so that we can later detect whether there is a newline immediately behind
+  # the current cursor.
+  buflines=(${(f)BUFFER})
+  local XRBUFFER="x"$RBUFFER
+  xrbuflines=(${(f)XRBUFFER})
 
-  if [[ $cursur_to_move_down_in_multi_line_buffer == 0 ]]; then
+  if [[ $#buflines -gt 1 && $#xrbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
+    down-line-or-history
+    history_substring_search_move_cursor_eol=false
+  else
     if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
       let "history_substring_search_match_number = $history_substring_search_match_number"
       history_substring_search_old_buffer_forward=$BUFFER
@@ -205,10 +195,7 @@ history-substring-search-forward() {
         fi
       fi
     fi
-    cursor_just_moved_in_multiline_buffer=0
-  else
-    down-line-or-history
-    cursor_just_moved_in_multiline_buffer=1
+    history_substring_search_move_cursor_eol=true
   fi
 
   history-substring-search-end
