@@ -112,6 +112,8 @@ history-substring-search-end() {
   # for debugging purposes:
   #zle -R "mn: "$history_substring_search_match_number" m#: "${#history_substring_search_matches}
   #read -k -t 200 && zle -U $REPLY
+
+  true
 }
 
 history-substring-search-backward() {
