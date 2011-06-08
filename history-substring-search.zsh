@@ -126,7 +126,7 @@ history-substring-search-backward() {
   xlbuflines=(${(f)XLBUFFER})
 
   if [[ $#buflines -gt 1 && $#xlbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
-    up-line-or-history
+    zle up-line-or-history
     history_substring_search_move_cursor_eol=false
   else
     if [[ $history_substring_search_match_number -ge 2 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_plus_one ]]; then
@@ -168,7 +168,7 @@ history-substring-search-forward() {
   xrbuflines=(${(f)XRBUFFER})
 
   if [[ $#buflines -gt 1 && $#xrbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
-    down-line-or-history
+    zle down-line-or-history
     history_substring_search_move_cursor_eol=false
   else
     if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
