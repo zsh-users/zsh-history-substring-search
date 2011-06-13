@@ -102,8 +102,8 @@ history-substring-search-highlight() {
 
   # highlight $BUFFER using zsh-syntax-highlighting plugin
   # https://github.com/nicoulaj/zsh-syntax-highlighting
-  if [[ $+functions[_zsh_highlight-zle-buffer] -eq 1 ]]; then
-    _zsh_highlight-zle-buffer
+  if [[ $+functions[_zsh_highlight] -eq 1 ]]; then
+    _zsh_highlight
   fi
 
   if [[ -n $history_substring_search_query ]]; then
