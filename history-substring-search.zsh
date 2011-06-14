@@ -62,6 +62,100 @@
 setopt extendedglob
 zmodload -F zsh/parameter
 
+# We have to "override" some keys and widgets, unless
+# the zsh-syntax-highlighting plugin has been loaded:
+#
+# https://github.com/nicoulaj/zsh-syntax-highlighting
+#
+if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
+
+  # dummy implementation of _zsh_highlight()
+  # that simply removes existing highlights
+  function _zsh_highlight() {
+    region_highlight=()
+  }
+
+  # remove existing highlights when the user
+  # inserts printable characters into $BUFFER
+  function ordinary-key-press() {
+    if [[ $KEYS = [[:print:]] ]]; then
+      region_highlight=()
+    fi
+    zle .self-insert
+  }
+  zle -N self-insert ordinary-key-press
+
+  # override ZLE widgets to invoke _zsh_highlight()
+  #
+  # https://github.com/nicoulaj/zsh-syntax-highlighting/blob/
+  # bb7fcb79fad797a40077bebaf6f4e4a93c9d8163/zsh-syntax-highlighting.zsh#L121
+  #
+  #--------------8<-------------------8<-------------------8<-----------------
+  #
+  # Copyright (c) 2010-2011 zsh-syntax-highlighting contributors
+  # All rights reserved.
+  #
+  # Redistribution and use in source and binary forms, with or without
+  # modification, are permitted provided that the following conditions are
+  # met:
+  #
+  #  * Redistributions of source code must retain the above copyright
+  #    notice, this list of conditions and the following disclaimer.
+  #
+  #  * Redistributions in binary form must reproduce the above copyright
+  #    notice, this list of conditions and the following disclaimer in the
+  #    documentation and/or other materials provided with the distribution.
+  #
+  #  * Neither the name of the zsh-syntax-highlighting contributors nor the
+  #    names of its contributors may be used to endorse or promote products
+  #    derived from this software without specific prior written permission.
+  #
+  # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  # IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  # PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+  # CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  # EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  # PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  # PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+  # Load ZSH module zsh/zleparameter, needed to override user defined widgets.
+  zmodload zsh/zleparameter 2>/dev/null || {
+    echo 'zsh-syntax-highlighting: failed loading zsh/zleparameter, exiting.' >&2
+    return -1
+  }
+
+  # Override ZLE widgets to make them invoke _zsh_highlight.
+  for event in ${${(f)"$(zle -la)"}:#(_*|orig-*|.run-help|.which-command)}; do
+    if [[ "$widgets[$event]" == completion:* ]]; then
+      eval "zle -C orig-$event ${${${widgets[$event]}#*:}/:/ } ; $event() { builtin zle orig-$event && _zsh_highlight } ; zle -N $event"
+    else
+      case $event in
+        accept-and-menu-complete)
+          eval "$event() { builtin zle .$event && _zsh_highlight } ; zle -N $event"
+          ;;
+        .*)
+          clean_event=$event[2,${#event}] # Remove the leading dot in the event name
+          case ${widgets[$clean_event]-} in
+            (completion|user):*)
+              ;;
+            *)
+              eval "$clean_event() { builtin zle $event && _zsh_highlight } ; zle -N $clean_event"
+              ;;
+          esac
+          ;;
+        *)
+          ;;
+      esac
+    fi
+  done
+  unset event clean_event
+  #-------------->8------------------->8------------------->8-----------------
+fi
+
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i' # see "Globbing Flags" in zshexpn(1)
@@ -97,14 +191,7 @@ history-substring-search-begin() {
 }
 
 history-substring-search-highlight() {
-  # clear previously applied search query highlighting
-  region_highlight=()
-
-  # highlight $BUFFER using zsh-syntax-highlighting plugin
-  # https://github.com/nicoulaj/zsh-syntax-highlighting
-  if [[ $+functions[_zsh_highlight] -eq 1 ]]; then
-    _zsh_highlight
-  fi
+  _zsh_highlight
 
   if [[ -n $history_substring_search_query ]]; then
     # history_substring_search_query_escaped string was not empty: highlight it
