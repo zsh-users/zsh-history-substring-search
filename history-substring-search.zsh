@@ -126,24 +126,35 @@ history-substring-search-end() {
   [[ $history_substring_search_move_cursor_eol == true ]] && CURSOR=${#BUFFER}
 
   # for debugging purposes:
-  #zle -R "mn: "$history_substring_search_match_number" m#: "${#history_substring_search_matches}
-  #read -k -t 200 && zle -U $REPLY
+  # zle -R "mn: "$history_substring_search_match_number" m#: "${#history_substring_search_matches}
+  # read -k -t 200 && zle -U $REPLY
 
+  # suppress any errors:
   true
 }
 
 history-substring-search-backward() {
   history-substring-search-begin
 
-  # check if the UP arrow was pressed to move cursor in multi-line buffer:
-  # First create XLBUFFER (i.e. Xtended LBUFFER). Add an X before the cursor,
-  # so that we can later detect whether there is a newline immediately before
-  # the current cursor.
+  # Check if the UP arrow was pressed to move the cursor within a multi-line
+  # buffer.  This amounts to three tests:
+  #
+  # 1. $#buflines -gt 1
+  #
+  # 2. $CURSOR -ne $#BUFFER
+  #
+  # 3. Check if we are on the first line of the current multi-line buffer.
+  #    If so, pressing UP would amount to leaving the multi-line buffer.
+  #
+  #    We check this by adding an extra "x" to $LBUFFER, which makes sure that
+  #    xlbuflines is always equal to the number of lines until $CURSOR
+  #    (including the line with the cursor on it).
+  #
   buflines=(${(f)BUFFER})
   local XLBUFFER=$LBUFFER"x"
   xlbuflines=(${(f)XLBUFFER})
 
-  if [[ $#buflines -gt 1 && $#xlbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
+  if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
     zle up-line-or-history
     history_substring_search_move_cursor_eol=false
   else
@@ -177,15 +188,25 @@ history-substring-search-backward() {
 history-substring-search-forward() {
   history-substring-search-begin
 
-  # check if the DOWN arrow was pressed to move cursor in multi-line buffer:
-  # First create XRBUFFER (i.e. Xtended RBUFFER). Add an X after the cursor,
-  # so that we can later detect whether there is a newline immediately behind
-  # the current cursor.
+  # Check if the DOWN arrow was pressed to move the cursor within a multi-line
+  # buffer.  This amounts to three tests:
+  #
+  # 1. $#buflines -gt 1
+  #
+  # 2. $CURSOR -ne $#BUFFER
+  #
+  # 3. Check if we are on the last line of the current multi-line buffer.
+  #    If so, pressing DOWN would amount to leaving the multi-line buffer.
+  #
+  #    We check this by adding an extra "x" to $RBUFFER, which makes sure that
+  #    xrbuflines is always equal to the number of lines from $CURSOR
+  #    (including the line with the cursor on it).
+  #
   buflines=(${(f)BUFFER})
   local XRBUFFER="x"$RBUFFER
   xrbuflines=(${(f)XRBUFFER})
 
-  if [[ $#buflines -gt 1 && $#xrbuflines -ne 1 && $#BUFFER -ne $#LBUFFER ]]; then
+  if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
     zle down-line-or-history
     history_substring_search_move_cursor_eol=false
   else
