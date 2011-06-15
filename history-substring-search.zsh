@@ -253,8 +253,7 @@ history-substring-search-backward() {
   else
     if [[ $history_substring_search_match_number -ge 2 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_plus_one ]]; then
       let "history_substring_search_match_number = $history_substring_search_match_number - 1"
-      history_substring_search_command_to_be_retrieved=$history[$history_substring_search_matches[$history_substring_search_match_number]]
-      BUFFER=$history_substring_search_command_to_be_retrieved
+      BUFFER=$history[$history_substring_search_matches[$history_substring_search_match_number]]
       history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
     else
       if [[ $history_substring_search_match_number -eq 1 ]]; then
@@ -310,8 +309,7 @@ history-substring-search-forward() {
       history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
     elif [[ $history_substring_search_match_number -ge 0 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_minus_one ]]; then
       let "history_substring_search_match_number = $history_substring_search_match_number + 1"
-      history_substring_search_command_to_be_retrieved=$history[$history_substring_search_matches[$history_substring_search_match_number]]
-      BUFFER=$history_substring_search_command_to_be_retrieved
+      BUFFER=$history[$history_substring_search_matches[$history_substring_search_match_number]]
       history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
     else
       if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches ]]; then
