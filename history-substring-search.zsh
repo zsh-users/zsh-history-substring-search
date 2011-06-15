@@ -166,60 +166,60 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i' # see "Globbing Flags" in zshexpn(1)
 
-history-substring-search-begin() {
-  # continue using the previous "$history_substring_search_result" by default,
+_history-substring-search-begin() {
+  # continue using the previous "$_history_substring_search_result" by default,
   # unless the current query was cleared or a new/different query was entered
-  if [[ -z $BUFFER || $BUFFER != $history_substring_search_result ]]; then
+  if [[ -z $BUFFER || $BUFFER != $_history_substring_search_result ]]; then
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)"
-    history_substring_search_query_escaped=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
+    _history_substring_search_query_escaped=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
 
     # for the purpose of highlighting we will also keep a version without
     # doubly-escaped meta characters
-    history_substring_search_query=${BUFFER}
+    _history_substring_search_query=${BUFFER}
 
     # find all occurrences of the pattern *${query}* within the history file
     # (k) turns it an array of line numbers. (on) seems to remove duplicates.
     # (on) are default options. they can be turned off by (ON).
-    history_substring_search_matches=(${(kon)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${history_substring_search_query_escaped}*]})
+    _history_substring_search_matches=(${(kon)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
 
-    # define the range of value that $history_substring_search_match_number
-    # can take: [0, $history_substring_search_number_of_matches_plus_one]
-    history_substring_search_number_of_matches=${#history_substring_search_matches}
-    let "history_substring_search_number_of_matches_plus_one = $history_substring_search_number_of_matches + 1"
-    let "history_substring_search_number_of_matches_minus_one = $history_substring_search_number_of_matches - 1"
+    # define the range of value that $_history_substring_search_match_number
+    # can take: [0, $_history_substring_search_number_of_matches_plus_one]
+    _history_substring_search_number_of_matches=${#_history_substring_search_matches}
+    let "_history_substring_search_number_of_matches_plus_one = $_history_substring_search_number_of_matches + 1"
+    let "_history_substring_search_number_of_matches_minus_one = $_history_substring_search_number_of_matches - 1"
 
-    # initial value of $history_substring_search_match_number, which can
+    # initial value of $_history_substring_search_match_number, which can
     # initially only be decreased by ${WIDGET/forward/backward}
-    let "history_substring_search_match_number = $history_substring_search_number_of_matches_plus_one"
+    let "_history_substring_search_match_number = $_history_substring_search_number_of_matches_plus_one"
   fi
 }
 
-history-substring-search-highlight() {
+_history-substring-search-highlight() {
   _zsh_highlight
 
-  if [[ -n $history_substring_search_query ]]; then
-    # history_substring_search_query_escaped string was not empty: highlight it
+  if [[ -n $_history_substring_search_query ]]; then
+    # _history_substring_search_query_escaped string was not empty: highlight it
     # among other things, the following expression yields a variable $MEND,
     # which indicates the end position of the first occurrence of
-    # $history_substring_search_query_escaped in $BUFFER
-    : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($history_substring_search_query##)}
-    let "history_substring_search_query_mbegin = $MBEGIN - 1"
-    let "history_substring_search_query_mend = $history_substring_search_query_mbegin + $#history_substring_search_query"
-    region_highlight+=("$history_substring_search_query_mbegin $history_substring_search_query_mend $1")
+    # $_history_substring_search_query_escaped in $BUFFER
+    : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($_history_substring_search_query##)}
+    let "_history_substring_search_query_mbegin = $MBEGIN - 1"
+    let "_history_substring_search_query_mend = $_history_substring_search_query_mbegin + $#_history_substring_search_query"
+    region_highlight+=("$_history_substring_search_query_mbegin $_history_substring_search_query_mend $1")
   fi
 }
 
-history-substring-search-end() {
-  history_substring_search_result=$BUFFER
+_history-substring-search-end() {
+  _history_substring_search_result=$BUFFER
 
   # "zle .end-of-line" does not move CURSOR to the final end of line in
   # multi-line buffers.
-  [[ $history_substring_search_move_cursor_eol == true ]] && CURSOR=${#BUFFER}
+  [[ $_history_substring_search_move_cursor_eol == true ]] && CURSOR=${#BUFFER}
 
   # for debugging purposes:
-  # zle -R "mn: "$history_substring_search_match_number" m#: "${#history_substring_search_matches}
+  # zle -R "mn: "$_history_substring_search_match_number" m#: "${#_history_substring_search_matches}
   # read -k -t 200 && zle -U $REPLY
 
   # suppress any errors:
@@ -227,7 +227,7 @@ history-substring-search-end() {
 }
 
 history-substring-search-backward() {
-  history-substring-search-begin
+  _history-substring-search-begin
 
   # Check if the UP arrow was pressed to move the cursor within a multi-line
   # buffer.  This amounts to three tests:
@@ -249,36 +249,36 @@ history-substring-search-backward() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
     zle up-line-or-history
-    history_substring_search_move_cursor_eol=false
+    _history_substring_search_move_cursor_eol=false
   else
-    if [[ $history_substring_search_match_number -ge 2 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_plus_one ]]; then
-      let "history_substring_search_match_number = $history_substring_search_match_number - 1"
-      BUFFER=$history[$history_substring_search_matches[$history_substring_search_match_number]]
-      history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    if [[ $_history_substring_search_match_number -ge 2 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_plus_one ]]; then
+      let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
+      BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
+      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
     else
-      if [[ $history_substring_search_match_number -eq 1 ]]; then
-        # we will move out of the history_substring_search_matches
-        let "history_substring_search_match_number = $history_substring_search_match_number - 1"
-        history_substring_search_old_buffer_backward=$BUFFER
-        BUFFER=$history_substring_search_query
-        history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+      if [[ $_history_substring_search_match_number -eq 1 ]]; then
+        # we will move out of the _history_substring_search_matches
+        let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
+        _history_substring_search_old_buffer_backward=$BUFFER
+        BUFFER=$_history_substring_search_query
+        _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
       else
-        if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
-          # we will move back to the history_substring_search_matches
-          let "history_substring_search_match_number = $history_substring_search_match_number - 1"
-          BUFFER=$history_substring_search_old_buffer_forward
-          history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+        if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+          # we will move back to the _history_substring_search_matches
+          let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
+          BUFFER=$_history_substring_search_old_buffer_forward
+          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
         fi
       fi
     fi
-    history_substring_search_move_cursor_eol=true
+    _history_substring_search_move_cursor_eol=true
   fi
 
-  history-substring-search-end
+  _history-substring-search-end
 }
 
 history-substring-search-forward() {
-  history-substring-search-begin
+  _history-substring-search-begin
 
   # Check if the DOWN arrow was pressed to move the cursor within a multi-line
   # buffer.  This amounts to three tests:
@@ -300,35 +300,35 @@ history-substring-search-forward() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
     zle down-line-or-history
-    history_substring_search_move_cursor_eol=false
+    _history_substring_search_move_cursor_eol=false
   else
-    if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches_plus_one ]]; then
-      let "history_substring_search_match_number = $history_substring_search_match_number"
-      history_substring_search_old_buffer_forward=$BUFFER
-      BUFFER=$history_substring_search_query
-      history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
-    elif [[ $history_substring_search_match_number -ge 0 && $history_substring_search_match_number -le $history_substring_search_number_of_matches_minus_one ]]; then
-      let "history_substring_search_match_number = $history_substring_search_match_number + 1"
-      BUFFER=$history[$history_substring_search_matches[$history_substring_search_match_number]]
-      history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+      let "_history_substring_search_match_number = $_history_substring_search_match_number"
+      _history_substring_search_old_buffer_forward=$BUFFER
+      BUFFER=$_history_substring_search_query
+      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    elif [[ $_history_substring_search_match_number -ge 0 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_minus_one ]]; then
+      let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+      BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
+      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
     else
-      if [[ $history_substring_search_match_number -eq $history_substring_search_number_of_matches ]]; then
-        let "history_substring_search_match_number = $history_substring_search_match_number + 1"
-        history_substring_search_old_buffer_forward=$BUFFER
-        BUFFER=$history_substring_search_query
-        history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+      if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches ]]; then
+        let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+        _history_substring_search_old_buffer_forward=$BUFFER
+        BUFFER=$_history_substring_search_query
+        _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
       else
-        if [[ $history_substring_search_match_number -eq 0 ]]; then
-          let "history_substring_search_match_number = $history_substring_search_match_number + 1"
-          BUFFER=$history_substring_search_old_buffer_backward
-          history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+        if [[ $_history_substring_search_match_number -eq 0 ]]; then
+          let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+          BUFFER=$_history_substring_search_old_buffer_backward
+          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
         fi
       fi
     fi
-    history_substring_search_move_cursor_eol=true
+    _history_substring_search_move_cursor_eol=true
   fi
 
-  history-substring-search-end
+  _history-substring-search-end
 }
 
 zle -N history-substring-search-backward
