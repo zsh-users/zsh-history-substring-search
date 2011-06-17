@@ -229,49 +229,64 @@ _history-substring-search-end() {
 history-substring-search-backward() {
   _history-substring-search-begin
 
-  # Check if the UP arrow was pressed to move the cursor within a multi-line
-  # buffer.  This amounts to three tests:
-  #
-  # 1. $#buflines -gt 1
-  #
-  # 2. $CURSOR -ne $#BUFFER
-  #
-  # 3. Check if we are on the first line of the current multi-line buffer.
-  #    If so, pressing UP would amount to leaving the multi-line buffer.
-  #
-  #    We check this by adding an extra "x" to $LBUFFER, which makes sure that
-  #    xlbuflines is always equal to the number of lines until $CURSOR
-  #    (including the line with the cursor on it).
-  #
-  buflines=(${(f)BUFFER})
-  local XLBUFFER=$LBUFFER"x"
-  xlbuflines=(${(f)XLBUFFER})
+  # When searching without a search query history-substring-search-backward should behave like
+  # up-history. Apart from this such a search should end with an empty BUFFER like in Fish.
+  if [[ $_history_substring_search_query == "" ]]; then
 
-  if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
-    zle up-line-or-history
-    _history_substring_search_move_cursor_eol=false
-  else
-    if [[ $_history_substring_search_match_number -ge 2 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_plus_one ]]; then
-      let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
-      BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
-      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    # We are not at the last history entry
+    if [[ $HISTNO -gt 1 ]]; then
+      zle up-history
     else
-      if [[ $_history_substring_search_match_number -eq 1 ]]; then
-        # we will move out of the _history_substring_search_matches
+      [[ $#_history_substring_search_last_entry_in_history -eq 0 ]] && _history_substring_search_last_entry_in_history=$BUFFER
+      BUFFER=""
+    fi
+
+  else
+    # Check if the UP arrow was pressed to move the cursor within a multi-line
+    # buffer.  This amounts to three tests:
+    #
+    # 1. $#buflines -gt 1
+    #
+    # 2. $CURSOR -ne $#BUFFER
+    #
+    # 3. Check if we are on the first line of the current multi-line buffer.
+    #    If so, pressing UP would amount to leaving the multi-line buffer.
+    #
+    #    We check this by adding an extra "x" to $LBUFFER, which makes sure that
+    #    xlbuflines is always equal to the number of lines until $CURSOR
+    #    (including the line with the cursor on it).
+    #
+    buflines=(${(f)BUFFER})
+    local XLBUFFER=$LBUFFER"x"
+    xlbuflines=(${(f)XLBUFFER})
+
+    if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
+      zle up-line-or-history
+      _history_substring_search_move_cursor_eol=false
+    else
+      # Start the actual Fisch like history search
+      if [[ $_history_substring_search_match_number -ge 2 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_plus_one ]]; then
         let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
-        _history_substring_search_old_buffer_backward=$BUFFER
-        BUFFER=$_history_substring_search_query
-        _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+        BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
+        _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
       else
-        if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
-          # we will move back to the _history_substring_search_matches
+        if [[ $_history_substring_search_match_number -eq 1 ]]; then
+          # we will move out of the _history_substring_search_matches
           let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
-          BUFFER=$_history_substring_search_old_buffer_forward
-          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+          _history_substring_search_old_buffer_backward=$BUFFER
+          BUFFER=$_history_substring_search_query
+          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+        else
+          if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+            # we will move back to the _history_substring_search_matches
+            let "_history_substring_search_match_number = $_history_substring_search_match_number - 1"
+            BUFFER=$_history_substring_search_old_buffer_forward
+            _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+          fi
         fi
       fi
+      _history_substring_search_move_cursor_eol=true
     fi
-    _history_substring_search_move_cursor_eol=true
   fi
 
   _history-substring-search-end
@@ -280,52 +295,68 @@ history-substring-search-backward() {
 history-substring-search-forward() {
   _history-substring-search-begin
 
-  # Check if the DOWN arrow was pressed to move the cursor within a multi-line
-  # buffer.  This amounts to three tests:
-  #
-  # 1. $#buflines -gt 1
-  #
-  # 2. $CURSOR -ne $#BUFFER
-  #
-  # 3. Check if we are on the last line of the current multi-line buffer.
-  #    If so, pressing DOWN would amount to leaving the multi-line buffer.
-  #
-  #    We check this by adding an extra "x" to $RBUFFER, which makes sure that
-  #    xrbuflines is always equal to the number of lines from $CURSOR
-  #    (including the line with the cursor on it).
-  #
-  buflines=(${(f)BUFFER})
-  local XRBUFFER="x"$RBUFFER
-  xrbuflines=(${(f)XRBUFFER})
+  # When searching without a search query history-substring-search-forward should behave like
+  # down-history. Apart from this such a search should end with an empty BUFFER like in Fish.
+  if [[ $_history_substring_search_query == "" ]]; then
 
-  if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
-    zle down-line-or-history
-    _history_substring_search_move_cursor_eol=false
-  else
-    if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
-      let "_history_substring_search_match_number = $_history_substring_search_match_number"
-      _history_substring_search_old_buffer_forward=$BUFFER
-      BUFFER=$_history_substring_search_query
-      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
-    elif [[ $_history_substring_search_match_number -ge 0 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_minus_one ]]; then
-      let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
-      BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
-      _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    # We are not at the last history entry
+    if [[ $#_history_substring_search_last_entry_in_history -eq 0 ]]; then
+      zle down-history
     else
-      if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches ]]; then
-        let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+      BUFFER=$_history_substring_search_last_entry_in_history
+      CURSOR=$#BUFFER
+      _history_substring_search_last_entry_in_history=""
+    fi
+
+  else
+    # Check if the DOWN arrow was pressed to move the cursor within a multi-line
+    # buffer.  This amounts to three tests:
+    #
+    # 1. $#buflines -gt 1
+    #
+    # 2. $CURSOR -ne $#BUFFER
+    #
+    # 3. Check if we are on the last line of the current multi-line buffer.
+    #    If so, pressing DOWN would amount to leaving the multi-line buffer.
+    #
+    #    We check this by adding an extra "x" to $RBUFFER, which makes sure that
+    #    xrbuflines is always equal to the number of lines from $CURSOR
+    #    (including the line with the cursor on it).
+    #
+    buflines=(${(f)BUFFER})
+    local XRBUFFER="x"$RBUFFER
+    xrbuflines=(${(f)XRBUFFER})
+
+    if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
+      zle down-line-or-history
+      _history_substring_search_move_cursor_eol=false
+    else
+      # Start the actual Fisch like history search
+      if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+        let "_history_substring_search_match_number = $_history_substring_search_match_number"
         _history_substring_search_old_buffer_forward=$BUFFER
         BUFFER=$_history_substring_search_query
         _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+      elif [[ $_history_substring_search_match_number -ge 0 && $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_minus_one ]]; then
+        let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+        BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
+        _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
       else
-        if [[ $_history_substring_search_match_number -eq 0 ]]; then
+        if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches ]]; then
           let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
-          BUFFER=$_history_substring_search_old_buffer_backward
-          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+          _history_substring_search_old_buffer_forward=$BUFFER
+          BUFFER=$_history_substring_search_query
+          _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+        else
+          if [[ $_history_substring_search_match_number -eq 0 ]]; then
+            let "_history_substring_search_match_number = $_history_substring_search_match_number + 1"
+            BUFFER=$_history_substring_search_old_buffer_backward
+            _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+          fi
         fi
       fi
+      _history_substring_search_move_cursor_eol=true
     fi
-    _history_substring_search_move_cursor_eol=true
   fi
 
   _history-substring-search-end
