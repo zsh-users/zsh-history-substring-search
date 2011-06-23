@@ -173,7 +173,7 @@ _history-substring-search-begin() {
     # $BUFFER contains the text that is in the command-line currently.
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)"
-    _history_substring_search_query_escaped=${BUFFER//(#m)[\][()\\*?#<>~^]/\\$MATCH}
+    _history_substring_search_query_escaped=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
 
     # for the purpose of highlighting we will also keep a version without
     # doubly-escaped meta characters
