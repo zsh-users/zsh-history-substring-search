@@ -60,12 +60,6 @@
 #
 ##############################################################################
 
-# NOTE: The "up" in "up-history()" corresponds to "backward"
-#       in "history-substring-search-backward()", and so on.
-#
-# NOTE: The "down" in "down-history()" corresponds to "forward"
-#       in "history-substring-search-forward()", and so on.
-
 setopt extendedglob
 zmodload -F zsh/parameter
 
@@ -216,8 +210,8 @@ _history-substring-search-begin() {
     let "_history_substring_search_number_of_matches_minus_one = $_history_substring_search_number_of_matches - 1"
 
     #
-    # initial value of $_history_substring_search_match_number,
-    # which can only be decreased by ${WIDGET/forward/backward}.
+    # initial value of $_history_substring_search_match_number, which
+    # can only be decreased by the history-substring-search-* widgets.
     #
     let "_history_substring_search_match_number = $_history_substring_search_number_of_matches_plus_one"
   fi
@@ -299,9 +293,9 @@ _history-substring-search-down-buffer() {
 
 _history-substring-search-up-history() {
   #
-  # When searching without a search query history-substring-search-backward
-  # should behave like up-history. Apart from this, such a search should end
-  # with an empty $BUFFER like in Fish.
+  # When searching without a search query history-substring-search-up should
+  # behave like up-history. Apart from this, such a search should end with an
+  # empty $BUFFER like in Fish.
   #
   if [[ -z $_history_substring_search_query ]]; then
     # As long as we are not at the last history entry, call up-history():
@@ -332,7 +326,7 @@ _history-substring-search-up-history() {
 _history-substring-search-down-history() {
   #
   # When searching without a search query the widget
-  # history-substring-search-forward should behave like down-history. Apart
+  # history-substring-search-down should behave like down-history. Apart
   # from this, such a search should end with an empty buffer:
   #
   if [[ -z $_history_substring_search_query ]]; then
@@ -541,7 +535,7 @@ _history-substring-search-end() {
   true
 }
 
-history-substring-search-backward() {
+history-substring-search-up() {
   _history-substring-search-begin
 
   _history-substring-search-up-history ||
@@ -551,7 +545,7 @@ history-substring-search-backward() {
   _history-substring-search-end
 }
 
-history-substring-search-forward() {
+history-substring-search-down() {
   _history-substring-search-begin
 
   _history-substring-search-down-history ||
@@ -561,11 +555,11 @@ history-substring-search-forward() {
   _history-substring-search-end
 }
 
-zle -N history-substring-search-backward
-zle -N history-substring-search-forward
+zle -N history-substring-search-up
+zle -N history-substring-search-down
 
-bindkey '\e[A' history-substring-search-backward
-bindkey '\e[B' history-substring-search-forward
+bindkey '\e[A' history-substring-search-up
+bindkey '\e[B' history-substring-search-down
 
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
