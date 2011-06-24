@@ -293,27 +293,14 @@ _history-substring-search-down-buffer() {
 
 _history-substring-search-up-history() {
   #
-  # When searching without a search query history-substring-search-up should
-  # behave like up-history. Apart from this, such a search should end with an
-  # empty $BUFFER like in Fish.
+  # Behave like up in ZSH, except clear the $BUFFER
+  # when beginning of history is reached like in Fish.
   #
   if [[ -z $_history_substring_search_query ]]; then
-    # As long as we are not at the last history entry, call up-history():
+
     if [[ $HISTNO -gt 1 ]]; then
       zle up-history
     else
-      #
-      # [[ $HISTNO -eq 1 ]] means that _history-substring-search-up-history()
-      # has arrived at the last entry of the history file.  In that case we
-      # make $_history_substring_search_last_entry_in_history equal to
-      # $BUFFER.  This value can later be retrieved by
-      # _history-substring-search-down-history().  Moreover the current buffer
-      # should be made empty.  In all other cases
-      # $_history_substring_search_last_entry_in_history should remain empty:
-      #
-      if [[ $#_history_substring_search_last_entry_in_history -eq 0 ]]; then
-        _history_substring_search_last_entry_in_history=$BUFFER
-      fi
       BUFFER=''
     fi
 
@@ -325,33 +312,15 @@ _history-substring-search-up-history() {
 
 _history-substring-search-down-history() {
   #
-  # When searching without a search query the widget
-  # history-substring-search-down should behave like down-history. Apart
-  # from this, such a search should end with an empty buffer:
+  # Behave like down-history in ZSH, except clear the
+  # $BUFFER when end of history is reached like in Fish.
   #
   if [[ -z $_history_substring_search_query ]]; then
-    #
-    # If _history-substring-search-up-history() has previously arrived at the
-    # last history entry it will have made
-    # $_history_substring_search_last_entry_in_history equal to $BUFFER (see
-    # the description of _history-substring-search-up-history()).  Therefore,
-    # here we test if $_history_substring_search_last_entry_in_history is
-    # equal to an empty string:
-    #
-    if [[ $#_history_substring_search_last_entry_in_history -eq 0 ]]; then
-      # If so we can safely call down-history():
+
+    if [[ $HISTNO -le $#history ]]; then
       zle down-history
     else
-      # If not we make $BUFFER equal to
-      # $_history_substring_search_last_entry_in_history and we move the the
-      # cursor to the end of the buffer:
-      BUFFER=$_history_substring_search_last_entry_in_history
-      CURSOR=$#BUFFER
-
-      # And we make $_history_substring_search_last_entry_in_history equal to
-      # an empty string, so that later we will be able to call up-history()
-      # and down-history() again:
-      _history_substring_search_last_entry_in_history=''
+      BUFFER=''
     fi
 
     return true
