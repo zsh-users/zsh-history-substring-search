@@ -173,6 +173,8 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i' # "i" means case insensitive, see "Globbing Flags" in zshexpn(1)
 
 _history-substring-search-begin() {
+  _history_substring_search_move_cursor_eol=false
+
   #
   # Continue using the previous $_history_substring_search_result by default,
   # unless the current query was cleared or a new/different query was entered.
@@ -255,7 +257,6 @@ _history-substring-search-up-buffer() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
     zle up-line-or-history
-    _history_substring_search_move_cursor_eol=false
     return true
   fi
 
@@ -284,7 +285,6 @@ _history-substring-search-down-buffer() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
     zle down-line-or-history
-    _history_substring_search_move_cursor_eol=false
     return true
   fi
 
@@ -361,6 +361,8 @@ _history-substring-search-down-history() {
 }
 
 _history-substring-search-up-search() {
+  _history_substring_search_move_cursor_eol=true
+
   #
   # Highlight matches during a history-substring-search:
   #
@@ -429,11 +431,11 @@ _history-substring-search-up-search() {
     BUFFER=$_history_substring_search_old_buffer
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   fi
-
-  _history_substring_search_move_cursor_eol=true
 }
 
 _history-substring-search-down-search() {
+  _history_substring_search_move_cursor_eol=true
+
   #
   # Highlight matches during a history-substring-search:
   #
@@ -513,19 +515,15 @@ _history-substring-search-down-search() {
     BUFFER=$_history_substring_search_old_buffer
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   fi
-
-  _history_substring_search_move_cursor_eol=true
 }
 
 _history-substring-search-end() {
-
-  # Restore the buffer
   _history_substring_search_result=$BUFFER
 
-  # Move the cursor to the last position unless we have just moved up or down within
-  # a multline-buffer, which should have set $_history_substring_search_move_cursor_eol
-  # equal to false:
-  [[ $_history_substring_search_move_cursor_eol == true ]] && CURSOR=${#BUFFER}
+  if [[ $_history_substring_search_move_cursor_eol == true ]]; then
+    # Move the cursor to the end of the $BUFFER.
+    CURSOR=${#BUFFER}
+  fi
 
   # For debugging purposes:
   # zle -R "mn: "$_history_substring_search_match_number" m#: "${#_history_substring_search_matches}
