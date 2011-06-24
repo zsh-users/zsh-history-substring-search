@@ -239,7 +239,7 @@ _history-substring-search-highlight() {
   fi
 }
 
-_history-substring-search-check-and-potentially-move-up-within-mutiline-buffer() {
+_history-substring-search-up-buffer() {
   #
   # Check if the UP arrow was pressed to move the cursor within a multi-line
   # buffer. This amounts to three tests:
@@ -262,19 +262,13 @@ _history-substring-search-check-and-potentially-move-up-within-mutiline-buffer()
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
     zle up-line-or-history
     _history_substring_search_move_cursor_eol=false
-    #
-    # $_history_substring_search_move_up_within_mutiline_buffer should reflect
-    # whether the call to
-    # _history-substring-search-check-and-potentially-move-up-within-mutiline-buffer()
-    # has succeeded or failed:
-    #
-    _history_substring_search_move_up_within_mutiline_buffer=true
-  else
-    _history_substring_search_move_up_within_mutiline_buffer=false
+    return true
   fi
+
+  false
 }
 
-_history-substring-search-check-and-potentially-move-down-within-mutiline-buffer() {
+_history-substring-search-down-buffer() {
   #
   # Check if the DOWN arrow was pressed to move the cursor within a multi-line
   # buffer. This amounts to three tests:
@@ -297,19 +291,13 @@ _history-substring-search-check-and-potentially-move-down-within-mutiline-buffer
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
     zle down-line-or-history
     _history_substring_search_move_cursor_eol=false
-    #
-    # $_history_substring_search_move_down_within_mutiline_buffer should
-    # reflect whether the call to
-    # _history-substring-search-check-and-potentially-move-down-within-mutiline-buffer()
-    # has succeeded or failed:
-    #
-    _history_substring_search_move_down_within_mutiline_buffer=true
-  else
-    _history_substring_search_move_down_within_mutiline_buffer=false
+    return true
   fi
+
+  false
 }
 
-_history-substring-search-check-up-history() {
+_history-substring-search-up-history() {
   #
   # When searching without a search query history-substring-search-backward
   # should behave like up-history. Apart from this, such a search should end
@@ -321,28 +309,27 @@ _history-substring-search-check-up-history() {
       zle up-history
     else
       #
-      # [[ $HISTNO -eq 1 ]] means that
-      # _history-substring-search-check-UP-history() has arrived at the last
-      # entry of the history file.  In that case we make
-      # $_history_substring_search_last_entry_in_history equal to $BUFFER.
-      # This value can later be retrieved by
-      # _history-substring-search-check-DOWN-history().  Moreover the current
-      # buffer should be made empty.  In all other cases
+      # [[ $HISTNO -eq 1 ]] means that _history-substring-search-up-history()
+      # has arrived at the last entry of the history file.  In that case we
+      # make $_history_substring_search_last_entry_in_history equal to
+      # $BUFFER.  This value can later be retrieved by
+      # _history-substring-search-down-history().  Moreover the current buffer
+      # should be made empty.  In all other cases
       # $_history_substring_search_last_entry_in_history should remain empty:
       #
-      [[ $#_history_substring_search_last_entry_in_history -eq 0 ]] && _history_substring_search_last_entry_in_history=$BUFFER
-      BUFFER=""
+      if [[ $#_history_substring_search_last_entry_in_history -eq 0 ]]; then
+        _history_substring_search_last_entry_in_history=$BUFFER
+      fi
+      BUFFER=''
     fi
 
-    # $_history_substring_search_up_history should reflect whether the call to
-    # _history-substring-search-check-up-history() has succeeded or failed:
-    _history_substring_search_up_history=true
-  else
-    _history_substring_search_up_history=false
+    return true
   fi
+
+  false
 }
 
-_history-substring-search-check-down-history() {
+_history-substring-search-down-history() {
   #
   # When searching without a search query the widget
   # history-substring-search-forward should behave like down-history. Apart
@@ -350,13 +337,12 @@ _history-substring-search-check-down-history() {
   #
   if [[ -z $_history_substring_search_query ]]; then
     #
-    # If _history-substring-search-check-UP-history() has previously arrived
-    # at the last history entry it will have made
+    # If _history-substring-search-up-history() has previously arrived at the
+    # last history entry it will have made
     # $_history_substring_search_last_entry_in_history equal to $BUFFER (see
-    # the description of _history-substring-search-check-UP-history()).
-    # Therefore, here we test if
-    # $_history_substring_search_last_entry_in_history is equal to an empty
-    # string:
+    # the description of _history-substring-search-up-history()).  Therefore,
+    # here we test if $_history_substring_search_last_entry_in_history is
+    # equal to an empty string:
     #
     if [[ $#_history_substring_search_last_entry_in_history -eq 0 ]]; then
       # If so we can safely call down-history():
@@ -374,15 +360,13 @@ _history-substring-search-check-down-history() {
       _history_substring_search_last_entry_in_history=''
     fi
 
-    # $_history_substring_search_down_history should reflect whether
-    # _history-substring-search-check-down-history() has succeeded or failed:
-    _history_substring_search_down_history=true
-  else
-    _history_substring_search_down_history=false
+    return true
   fi
+
+  false
 }
 
-_history-substring-search-highlight-matches-up() {
+_history-substring-search-up-highlight() {
   #
   # Highlight matches during a history-substring-search:
   #
@@ -423,7 +407,7 @@ _history-substring-search-highlight-matches-up() {
     #
     # 2. Save the current buffer in $_history_substring_search_old_buffer,
     #    so that it can be retrieved by
-    #    _history-substring-search-highlight-matches-down() later.
+    #    _history-substring-search-down-highlight() later.
     #
     # 3. Make $BUFFER equal to $_history_substring_search_query.
     #
@@ -455,7 +439,7 @@ _history-substring-search-highlight-matches-up() {
   _history_substring_search_move_cursor_eol=true
 }
 
-_history-substring-search-highlight-matches-down() {
+_history-substring-search-down-highlight() {
   #
   # Highlight matches during a history-substring-search:
   #
@@ -507,7 +491,7 @@ _history-substring-search-highlight-matches-down() {
     #
     # 2. Save the current buffer in $_history_substring_search_old_buffer,
     #    so that it can be retrieved by
-    #    _history-substring-search-highlight-matches-up() later.
+    #    _history-substring-search-up-highlight() later.
     #
     # 3. Make $BUFFER equal to $_history_substring_search_query.
     #
@@ -558,60 +542,22 @@ _history-substring-search-end() {
 }
 
 history-substring-search-backward() {
-
-  # Start the widget:
   _history-substring-search-begin
 
-  # _history-substring-search-check-up-history sets a boolean named
-  # $_history_substring_search_up_history:
-  _history-substring-search-check-up-history
+  _history-substring-search-up-history ||
+  _history-substring-search-up-buffer ||
+  _history-substring-search-up-highlight
 
-  # we only continue if we have NOT entered into up-history:
-  if [[ $_history_substring_search_up_history == false ]]; then
-
-    # _history-substring-search-check-and-potentially-move-up-within-mutiline-buffer
-    # sets a boolean named
-    # $_history_substring_search_check_move_up_within_mutiline_buffer:
-    _history-substring-search-check-and-potentially-move-up-within-mutiline-buffer
-
-    # We only continue if we have NOT moved up within a multi-line buffer:
-    if [[ $_history_substring_search_move_up_within_mutiline_buffer == false ]]; then
-
-      # Start the actual behavior that highlights matches:
-      _history-substring-search-highlight-matches-up
-    fi
-  fi
-
-  # Finalize the widget:
   _history-substring-search-end
 }
 
 history-substring-search-forward() {
-
-  # Start the widget:
   _history-substring-search-begin
 
-  # _history-substring-search-check-down-history sets a boolean named
-  # $_history_substring_search_down_history:
-  _history-substring-search-check-down-history
+  _history-substring-search-down-history ||
+  _history-substring-search-down-buffer ||
+  _history-substring-search-down-highlight
 
-  # We only continue if we have NOT entered into down-history:
-  if [[ $_history_substring_search_down_history == false ]]; then
-
-    # _history-substring-search-check-and-potentially-move-down-within-mutiline-buffer
-    # sets a boolean named
-    # $_history_substring_search_check_move_down_within_mutiline_buffer:
-    _history-substring-search-check-and-potentially-move-down-within-mutiline-buffer
-
-    # We only continue if we have NOT moved down within a multi-line buffer:
-    if [[ $_history_substring_search_move_down_within_mutiline_buffer == false ]]; then
-
-      # Start the actual behavior that highlights matches:
-      _history-substring-search-highlight-matches-down
-    fi
-  fi
-
-  # Finalize the widget:
   _history-substring-search-end
 }
 
