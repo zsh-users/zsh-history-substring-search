@@ -205,17 +205,17 @@ _history-substring-search-begin() {
 
     #
     # Define the range of values that $_history_substring_search_match_number
-    # can take: [0, $_history_substring_search_number_of_matches_plus_one].
+    # can take: [0, $_history_substring_search_matches_count_plus].
     #
-    _history_substring_search_number_of_matches=${#_history_substring_search_matches}
-    let "_history_substring_search_number_of_matches_plus_one = $_history_substring_search_number_of_matches + 1"
-    let "_history_substring_search_number_of_matches_minus_one = $_history_substring_search_number_of_matches - 1"
+    _history_substring_search_matches_count=${#_history_substring_search_matches}
+    let "_history_substring_search_matches_count_plus = $_history_substring_search_matches_count + 1"
+    let "_history_substring_search_matches_count_sans = $_history_substring_search_matches_count - 1"
 
     #
     # initial value of $_history_substring_search_match_number, which
     # can only be decreased by the history-substring-search-* widgets.
     #
-    let "_history_substring_search_match_number = $_history_substring_search_number_of_matches_plus_one"
+    let "_history_substring_search_match_number = $_history_substring_search_matches_count_plus"
   fi
 }
 
@@ -367,20 +367,20 @@ _history-substring-search-up-search() {
   # Highlight matches during a history-substring-search:
   #
   # * $_history_substring_search_matches: the current list of matches
-  # * $_history_substring_search_number_of_matches: the current number of matches
-  # * $_history_substring_search_number_of_matches_plus_one: the current number of matches + 1
-  # * $_history_substring_search_number_of_matches_minus_one: the current number of matches - 1
+  # * $_history_substring_search_matches_count: the current number of matches
+  # * $_history_substring_search_matches_count_plus: the current number of matches + 1
+  # * $_history_substring_search_matches_count_sans: the current number of matches - 1
   # * $_history_substring_search_match_number: the number of the current match
   #
-  # The range of values that $_history_substring_search_match_number can take
-  # is: [0, $_history_substring_search_number_of_matches_plus_one].  A value
-  # of 0 indicates that we are beyond the end of
-  # $_history_substring_search_matches.  A value of
-  # $_history_substring_search_number_of_matches_plus_one indicates that we
+  # The range of values that $_history_substring_search_match_number
+  # can take is: [0, $_history_substring_search_matches_count_plus].
+  # A value of 0 indicates that we are beyond the end of
+  # $_history_substring_search_matches. A value of
+  # $_history_substring_search_matches_count_plus indicates that we
   # are beyond the beginning of $_history_substring_search_matches.
   #
   # The initial value of $_history_substring_search_match_number is
-  # $_history_substring_search_number_of_matches_plus_one.
+  # $_history_substring_search_matches_count_plus.
   #
   if [[ $_history_substring_search_match_number -ge 2 ]]; then
     #
@@ -415,7 +415,7 @@ _history-substring-search-up-search() {
     BUFFER=$_history_substring_search_query
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 
-  elif [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+  elif [[ $_history_substring_search_match_number -eq $_history_substring_search_matches_count_plus ]]; then
     #
     # We were beyond the beginning of $_history_substring_search_matches but
     # UP makes us move back to $_history_substring_search_matches:
@@ -440,25 +440,25 @@ _history-substring-search-down-search() {
   # Highlight matches during a history-substring-search:
   #
   # $_history_substring_search_matches: the current list of matches
-  # $_history_substring_search_number_of_matches: the current number of matches
-  # $_history_substring_search_number_of_matches_plus_one: the current number of matches + 1
-  # $_history_substring_search_number_of_matches_minus_one: the current number of matches - 1
+  # $_history_substring_search_matches_count: the current number of matches
+  # $_history_substring_search_matches_count_plus: the current number of matches + 1
+  # $_history_substring_search_matches_count_sans: the current number of matches - 1
   # $_history_substring_search_match_number: the number of the current match
   #
-  # The range of values that $_history_substring_search_match_number can take
-  # is: [0, $_history_substring_search_number_of_matches_plus_one].  A value
-  # of 0 indicates that we are beyond the end of
-  # $_history_substring_search_matches.  A value of
-  # $_history_substring_search_number_of_matches_plus_one indicates that we
+  # The range of values that $_history_substring_search_match_number
+  # can take is: [0, $_history_substring_search_matches_count_plus].
+  # A value of 0 indicates that we are beyond the end of
+  # $_history_substring_search_matches. A value of
+  # $_history_substring_search_matches_count_plus indicates that we
   # are beyond the beginning of $_history_substring_search_matches.
   #
   # The initial value of $_history_substring_search_match_number is
-  # $_history_substring_search_number_of_matches_plus_one.
+  # $_history_substring_search_matches_count_plus.
   #
-  if [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches_plus_one ]]; then
+  if [[ $_history_substring_search_match_number -eq $_history_substring_search_matches_count_plus ]]; then
     #
     # DOWN was pressed immediately. $_history_substring_search_match_number is
-    # still equal to $_history_substring_search_match_number_plus_one.
+    # still equal to $_history_substring_search_match_number_plus.
     # However, there is no highlighting yet:
     #
     # 1. We have to use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
@@ -466,7 +466,7 @@ _history-substring-search-down-search() {
     #
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 
-  elif [[ $_history_substring_search_match_number -le $_history_substring_search_number_of_matches_minus_one ]]; then
+  elif [[ $_history_substring_search_match_number -le $_history_substring_search_matches_count_sans ]]; then
     #
     # Highlight the next match:
     #
@@ -479,7 +479,7 @@ _history-substring-search-down-search() {
     BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_number]]
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
 
-  elif [[ $_history_substring_search_match_number -eq $_history_substring_search_number_of_matches ]]; then
+  elif [[ $_history_substring_search_match_number -eq $_history_substring_search_matches_count ]]; then
     #
     # We will move beyond the beginning of $_history_substring_search_matches:
     #
