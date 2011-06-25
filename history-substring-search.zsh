@@ -366,7 +366,7 @@ _history-substring-search-down-history() {
   false
 }
 
-_history-substring-search-up-highlight() {
+_history-substring-search-up-search() {
   #
   # Highlight matches during a history-substring-search:
   #
@@ -407,7 +407,7 @@ _history-substring-search-up-highlight() {
     #
     # 2. Save the current buffer in $_history_substring_search_old_buffer,
     #    so that it can be retrieved by
-    #    _history-substring-search-down-highlight() later.
+    #    _history-substring-search-down-search() later.
     #
     # 3. Make $BUFFER equal to $_history_substring_search_query.
     #
@@ -439,7 +439,7 @@ _history-substring-search-up-highlight() {
   _history_substring_search_move_cursor_eol=true
 }
 
-_history-substring-search-down-highlight() {
+_history-substring-search-down-search() {
   #
   # Highlight matches during a history-substring-search:
   #
@@ -489,9 +489,9 @@ _history-substring-search-down-highlight() {
     #
     # 1. Increase $_history_substring_search_match_number by 1.
     #
-    # 2. Save the current buffer in $_history_substring_search_old_buffer,
-    #    so that it can be retrieved by
-    #    _history-substring-search-up-highlight() later.
+    # 2. Save the current buffer in $_history_substring_search_old_buffer, so
+    #    that it can be retrieved by _history-substring-search-up-search()
+    #    later.
     #
     # 3. Make $BUFFER equal to $_history_substring_search_query.
     #
@@ -546,7 +546,7 @@ history-substring-search-backward() {
 
   _history-substring-search-up-history ||
   _history-substring-search-up-buffer ||
-  _history-substring-search-up-highlight
+  _history-substring-search-up-search
 
   _history-substring-search-end
 }
@@ -556,7 +556,7 @@ history-substring-search-forward() {
 
   _history-substring-search-down-history ||
   _history-substring-search-down-buffer ||
-  _history-substring-search-down-highlight
+  _history-substring-search-down-search
 
   _history-substring-search-end
 }
