@@ -354,10 +354,13 @@ _history-substring-search-up-history() {
   #
   if [[ -z $_history_substring_search_query ]]; then
 
-    if [[ $HISTNO -gt 1 ]]; then
-      zle up-history
-    else
+    # we have reached the absolute top of history
+    if [[ $HISTNO -eq 1 ]]; then
       BUFFER=''
+
+    # going up from somewhere below the top of history
+    else
+      zle up-history
     fi
 
     return true
@@ -373,10 +376,14 @@ _history-substring-search-down-history() {
   #
   if [[ -z $_history_substring_search_query ]]; then
 
-    if [[ $HISTNO -le $#history ]]; then
-      zle down-history
+    # going down from the absolute top of history
+    if [[ $HISTNO -eq 1 && -z $BUFFER ]]; then
+      BUFFER=${history[1]}
+      _history_substring_search_move_cursor_eol=true
+
+    # going down from somewhere above the bottom of history
     else
-      BUFFER=''
+      zle down-history
     fi
 
     return true
