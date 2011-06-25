@@ -60,6 +60,48 @@
 #
 ##############################################################################
 
+#-----------------------------------------------------------------------------
+# configuration variables
+#-----------------------------------------------------------------------------
+
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
+HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i' # "i" means case insensitive, see "Globbing Flags" in zshexpn(1)
+
+#-----------------------------------------------------------------------------
+# the main ZLE widgets
+#-----------------------------------------------------------------------------
+
+history-substring-search-up() {
+  _history-substring-search-begin
+
+  _history-substring-search-up-history ||
+  _history-substring-search-up-buffer ||
+  _history-substring-search-up-search
+
+  _history-substring-search-end
+}
+
+history-substring-search-down() {
+  _history-substring-search-begin
+
+  _history-substring-search-down-history ||
+  _history-substring-search-down-buffer ||
+  _history-substring-search-down-search
+
+  _history-substring-search-end
+}
+
+zle -N history-substring-search-up
+zle -N history-substring-search-down
+
+bindkey '\e[A' history-substring-search-up
+bindkey '\e[B' history-substring-search-down
+
+#-----------------------------------------------------------------------------
+# implementation details
+#-----------------------------------------------------------------------------
+
 setopt extendedglob
 zmodload -F zsh/parameter
 
@@ -168,10 +210,6 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   #-------------->8------------------->8------------------->8-----------------
 fi
 
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
-HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i' # "i" means case insensitive, see "Globbing Flags" in zshexpn(1)
-
 _history-substring-search-begin() {
   _history_substring_search_move_cursor_eol=false
 
@@ -217,6 +255,22 @@ _history-substring-search-begin() {
     #
     let "_history_substring_search_match_number = $_history_substring_search_matches_count_plus"
   fi
+}
+
+_history-substring-search-end() {
+  _history_substring_search_result=$BUFFER
+
+  if [[ $_history_substring_search_move_cursor_eol == true ]]; then
+    # Move the cursor to the end of the $BUFFER.
+    CURSOR=${#BUFFER}
+  fi
+
+  # For debugging purposes:
+  # zle -R "mn: "$_history_substring_search_match_number" m#: "${#_history_substring_search_matches}
+  # read -k -t 200 && zle -U $REPLY
+
+  # Exit successfully from the history-substring-search-* widgets.
+  true
 }
 
 _history-substring-search-highlight() {
@@ -485,48 +539,6 @@ _history-substring-search-down-search() {
     _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   fi
 }
-
-_history-substring-search-end() {
-  _history_substring_search_result=$BUFFER
-
-  if [[ $_history_substring_search_move_cursor_eol == true ]]; then
-    # Move the cursor to the end of the $BUFFER.
-    CURSOR=${#BUFFER}
-  fi
-
-  # For debugging purposes:
-  # zle -R "mn: "$_history_substring_search_match_number" m#: "${#_history_substring_search_matches}
-  # read -k -t 200 && zle -U $REPLY
-
-  # Exit successfully from the history-substring-search-* widgets.
-  true
-}
-
-history-substring-search-up() {
-  _history-substring-search-begin
-
-  _history-substring-search-up-history ||
-  _history-substring-search-up-buffer ||
-  _history-substring-search-up-search
-
-  _history-substring-search-end
-}
-
-history-substring-search-down() {
-  _history-substring-search-begin
-
-  _history-substring-search-down-history ||
-  _history-substring-search-down-buffer ||
-  _history-substring-search-down-search
-
-  _history-substring-search-end
-}
-
-zle -N history-substring-search-up
-zle -N history-substring-search-down
-
-bindkey '\e[A' history-substring-search-up
-bindkey '\e[B' history-substring-search-down
 
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
