@@ -125,7 +125,7 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   # inserts printable characters into $BUFFER
   #
   function ordinary-key-press() {
-    if [[ $KEYS = [[:print:]] ]]; then
+    if [[ $KEYS == [[:print:]] ]]; then
       region_highlight=()
     fi
     zle .self-insert
@@ -357,7 +357,7 @@ _history-substring-search-up-history() {
 
     # we have reached the absolute top of history
     if [[ $HISTNO -eq 1 ]]; then
-      BUFFER=''
+      BUFFER=
 
     # going up from somewhere below the top of history
     else
