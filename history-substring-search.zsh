@@ -212,6 +212,7 @@ fi
 
 _history-substring-search-begin() {
   _history_substring_search_move_cursor_eol=false
+  _history_substring_search_query_highlight=
 
   #
   # Continue using the previous $_history_substring_search_result by default,
@@ -260,23 +261,16 @@ _history-substring-search-begin() {
 _history-substring-search-end() {
   _history_substring_search_result=$BUFFER
 
+  # move the cursor to the end of the command line
   if [[ $_history_substring_search_move_cursor_eol == true ]]; then
-    # Move the cursor to the end of the $BUFFER.
     CURSOR=${#BUFFER}
   fi
 
-  # For debugging purposes:
-  # zle -R "mn: "$_history_substring_search_match_index" m#: "${#_history_substring_search_matches}
-  # read -k -t 200 && zle -U $REPLY
-
-  # Exit successfully from the history-substring-search-* widgets.
-  true
-}
-
-_history-substring-search-highlight() {
+  # highlight command line using zsh-syntax-highlighting
   _zsh_highlight
 
-  if [[ -n $_history_substring_search_query ]]; then
+  # highlight the search query inside the command line
+  if [[ -n $_history_substring_search_query_highlight && -n $_history_substring_search_query ]]; then
     #
     # The following expression yields a variable $MBEGIN, which
     # indicates the begin position + 1 of the first occurrence
@@ -285,8 +279,15 @@ _history-substring-search-highlight() {
     : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($_history_substring_search_query##)}
     local begin=$(( MBEGIN - 1 ))
     local end=$(( begin + $#_history_substring_search_query ))
-    region_highlight+=("$begin $end $1")
+    region_highlight+=("$begin $end $_history_substring_search_query_highlight")
   fi
+
+  # For debugging purposes:
+  # zle -R "mn: "$_history_substring_search_match_index" m#: "${#_history_substring_search_matches}
+  # read -k -t 200 && zle -U $REPLY
+
+  # Exit successfully from the history-substring-search-* widgets.
+  true
 }
 
 _history-substring-search-up-buffer() {
@@ -425,7 +426,7 @@ _history-substring-search-up-search() {
     #
     (( _history_substring_search_match_index-- ))
     BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
 
   elif [[ $_history_substring_search_match_index -eq 1 ]]; then
     #
@@ -445,7 +446,7 @@ _history-substring-search-up-search() {
     (( _history_substring_search_match_index-- ))
     _history_substring_search_old_buffer=$BUFFER
     BUFFER=$_history_substring_search_query
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 
   elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count_plus ]]; then
     #
@@ -461,7 +462,7 @@ _history-substring-search-up-search() {
     #
     (( _history_substring_search_match_index-- ))
     BUFFER=$_history_substring_search_old_buffer
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   fi
 }
 
@@ -496,7 +497,7 @@ _history-substring-search-down-search() {
     # 1. We have to use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
     #    to highlight the current buffer.
     #
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 
   elif [[ $_history_substring_search_match_index -le $_history_substring_search_matches_count_sans ]]; then
     #
@@ -509,7 +510,7 @@ _history-substring-search-down-search() {
     #
     (( _history_substring_search_match_index++ ))
     BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
 
   elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count ]]; then
     #
@@ -529,7 +530,7 @@ _history-substring-search-down-search() {
     (( _history_substring_search_match_index++ ))
     _history_substring_search_old_buffer=$BUFFER
     BUFFER=$_history_substring_search_query
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 
   elif [[ $_history_substring_search_match_index -eq 0 ]]; then
     #
@@ -545,7 +546,7 @@ _history-substring-search-down-search() {
     #
     (( _history_substring_search_match_index++ ))
     BUFFER=$_history_substring_search_old_buffer
-    _history-substring-search-highlight $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   fi
 }
 
