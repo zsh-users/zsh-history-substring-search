@@ -10,13 +10,13 @@
 #
 # 1. Load this script into your interactive ZSH session:
 #
-#       % source history-substring-search.zsh
+#       % source zsh-history-substring-search.zsh
 #
 #    If you want to use the zsh-syntax-highlighting[6] script along with this
 #    script, then make sure that you load it *before* you load this script:
 #
 #       % source zsh-syntax-highlighting.zsh
-#       % source history-substring-search.zsh
+#       % source zsh-history-substring-search.zsh
 #
 # 2. Type any part of any previous command and then:
 #
