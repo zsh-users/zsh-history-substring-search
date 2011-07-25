@@ -83,6 +83,10 @@
 # It was further developed[4] by Guido van Steen, Suraj N. Kurapati, Sorin
 # Ionescu, and Vincent Guerci in 2011.
 #
+#-----------------------------------------------------------------------------
+# References
+#-----------------------------------------------------------------------------
+#
 # [1]: http://fishshell.com
 # [2]: http://www.zsh.org/mla/users/2009/msg00818.html
 # [3]: http://sourceforge.net/projects/fizsh/
