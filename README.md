@@ -9,8 +9,8 @@ and press the UP and DOWN arrow keys to cycle through the matching commands.
 [2]: http://www.zsh.org/mla/users/2009/msg00818.html
 [3]: http://sourceforge.net/projects/fizsh/
 [4]: https://github.com/robbyrussell/oh-my-zsh/pull/215
-[5]: https://github.com/sunaku/zsh-history-substring-search
-[6]: https://github.com/nicoulaj/zsh-syntax-highlighting
+[5]: https://github.com/zsh-users/zsh-history-substring-search
+[6]: https://github.com/zsh-users/zsh-syntax-highlighting
 
 ----------------------------------------------------------------------------
 Usage
