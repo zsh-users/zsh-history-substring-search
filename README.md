@@ -29,11 +29,11 @@ Usage
 2.  Type any part of any previous command and then:
 
     * Press the UP arrow key to select the nearest command that (1) contains
-      your query and (2) is older than the current command in the command
-      history.
+      your query (2) is older and (3) different than the current command in the
+      command history.
 
-    * Press the DOWN arrow key to select the nearest command that (1)
-      contains your query and (2) is newer than the current command in the
+    * Press the DOWN arrow key to select the nearest command that (1) contains
+      your query (2) is newer and (3) different than the current command in the
       command history.
 
     * Press ^U (the Control and U keys simultaneously) to abort the search.

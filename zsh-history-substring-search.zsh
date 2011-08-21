@@ -209,15 +209,36 @@ function _history-substring-search-begin() {
     #
     _history_substring_search_query_escaped=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
 
+
+    #
+    # Bunch of variables we are going to need later
+    #
+    local lv=''
+    local -a _tmp_hist_matches
+    typeset -a -g _history_substring_search_matches
+
     #
     # Find all occurrences of the search query in the history file.
     #
     # (k) turns it an array of line numbers.
     #
-    # (on) seems to remove duplicates, which are default
-    #      options. They can be turned off by (ON).
+    # (n) seems to remove duplicates, which are default
+    #     options. They can be turned off by (ON).
     #
-    _history_substring_search_matches=(${(kon)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
+    _tmp_hist_matches=( ${(kn)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]} )
+
+    #
+    # Iterate all matched line numbers, and make sure to remove subsequent
+    # duplicate entries. I'm pretty sure there is a nicer way to do this,
+    # but zsh doesn't offer unique value checking for associative arrays,
+    # so this is the best I could come up with.
+    #
+    for k in $_tmp_hist_matches; do
+        if [[ $lv != $history[$k] ]]; then
+            _history_substring_search_matches+=( $k )
+            lv=$history[$k]
+        fi
+    done
 
     #
     # Define the range of values that $_history_substring_search_match_index
