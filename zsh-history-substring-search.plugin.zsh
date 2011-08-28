@@ -1,6 +1,6 @@
 # This file integrates the zsh-history-substring-search script into oh-my-zsh.
 
-source "$ZSH/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
+source "${0:r:r}.zsh"
 
 if test "$CASE_SENSITIVE" = true; then
   unset HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS
