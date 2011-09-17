@@ -356,7 +356,7 @@ function _history-substring-search-up-history() {
 
     # going up from somewhere below the top of history
     else
-      zle up-history
+      zle up-line-or-history
     fi
 
     return true
@@ -379,7 +379,7 @@ function _history-substring-search-down-history() {
 
     # going down from somewhere above the bottom of history
     else
-      zle down-history
+      zle down-line-or-history
     fi
 
     return true
