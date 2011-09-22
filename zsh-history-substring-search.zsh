@@ -79,7 +79,6 @@ bindkey '\e[B' history-substring-search-down
 # implementation details
 #-----------------------------------------------------------------------------
 
-setopt extendedglob
 zmodload -F zsh/parameter
 
 #
@@ -188,6 +187,8 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
 fi
 
 function _history-substring-search-begin() {
+  setopt localoptions extendedglob
+
   _history_substring_search_move_cursor_eol=false
   _history_substring_search_query_highlight=
 
