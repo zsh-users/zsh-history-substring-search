@@ -255,6 +255,8 @@ function _history-substring-search-begin() {
 }
 
 function _history-substring-search-end() {
+  setopt localoptions extendedglob
+
   _history_substring_search_result=$BUFFER
 
   # move the cursor to the end of the command line
