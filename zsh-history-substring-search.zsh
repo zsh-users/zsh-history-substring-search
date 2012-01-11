@@ -109,12 +109,9 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   zle -N self-insert ordinary-key-press
 
   #
-  # Override ZLE widgets to invoke _zsh_highlight()
+  # The following snippet was taken from the zsh-syntax-highlighting project:
   #
-  # https://github.com/nicoulaj/zsh-syntax-highlighting/blob/
-  # bb7fcb79fad797a40077bebaf6f4e4a93c9d8163/zsh-syntax-highlighting.zsh#L121
-  #
-  #--------------8<-------------------8<-------------------8<-----------------
+  # https://github.com/zsh-users/zsh-syntax-highlighting/blob/56b134f5d62ae3d4e66c7f52bd0cc2595f9b305b/zsh-syntax-highlighting.zsh#L126-161
   #
   # Copyright (c) 2010-2011 zsh-syntax-highlighting contributors
   # All rights reserved.
@@ -145,45 +142,47 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
   # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  #
+  #--------------8<-------------------8<-------------------8<-----------------
+  # Rebind all ZLE widgets to make them invoke _zsh_highlights.
+  _zsh_highlight_bind_widgets()
+  {
+    # Load ZSH module zsh/zleparameter, needed to override user defined widgets.
+    zmodload zsh/zleparameter 2>/dev/null || {
+      echo 'zsh-syntax-highlighting: failed loading zsh/zleparameter.' >&2
+      return 1
+    }
 
-  # Load ZSH module zsh/zleparameter, needed to override user defined widgets.
-  zmodload zsh/zleparameter 2>/dev/null || {
-    echo 'zsh-syntax-highlighting: failed loading zsh/zleparameter, exiting.' >&2
-    return -1
-  }
+    # Override ZLE widgets to make them invoke _zsh_highlight.
+    local cur_widget
+    for cur_widget in ${${(f)"$(builtin zle -la)"}:#(.*|_*|orig-*|run-help|which-command|beep)}; do
+      case $widgets[$cur_widget] in
 
-  # Override ZLE widgets to make them invoke _zsh_highlight.
-  for event in ${${(f)"$(zle -la)"}:#(_*|orig-*|.run-help|.which-command)}; do
-    if [[ "$widgets[$event]" == completion:* ]]; then
-      eval "zle -C orig-$event ${${${widgets[$event]}#*:}/:/ } ; $event() { builtin zle orig-$event && _zsh_highlight } ; zle -N $event"
-    else
-      case $event in
-        accept-and-menu-complete)
-          eval "$event() { builtin zle .$event && _zsh_highlight } ; zle -N $event"
-          ;;
+        # Already rebound event: do nothing.
+        user:$cur_widget|user:_zsh_highlight_widget_*);;
 
-        # The following widgets should NOT remove any previously
-        # applied highlighting. Therefore we do not remap them.
-        .forward-char|.backward-char|.up-line-or-history|.down-line-or-history)
-          ;;
+        # User defined widget: override and rebind old one with prefix "orig-".
+        user:*) eval "zle -N orig-$cur_widget ${widgets[$cur_widget]#*:}; \
+                      _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                      zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
 
-        .*)
-          clean_event=$event[2,${#event}] # Remove the leading dot in the event name
-          case ${widgets[$clean_event]-} in
-            (completion|user):*)
-              ;;
-            *)
-              eval "$clean_event() { builtin zle $event && _zsh_highlight } ; zle -N $clean_event"
-              ;;
-          esac
-          ;;
-        *)
-          ;;
+        # Completion widget: override and rebind old one with prefix "orig-".
+        completion:*) eval "zle -C orig-$cur_widget ${${widgets[$cur_widget]#*:}/:/ }; \
+                            _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                            zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+
+        # Builtin widget: override and make it call the builtin ".widget".
+        builtin) eval "_zsh_highlight_widget_$cur_widget() { builtin zle .$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                       zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+
+        # Default: unhandled case.
+        *) echo "zsh-syntax-highlighting: unhandled ZLE widget '$cur_widget'" >&2 ;;
       esac
-    fi
-  done
-  unset event clean_event
+    done
+  }
   #-------------->8------------------->8------------------->8-----------------
+
+  _zsh_highlight_bind_widgets
 fi
 
 function _history-substring-search-begin() {
