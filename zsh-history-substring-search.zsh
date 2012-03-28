@@ -383,6 +383,16 @@ function _history-substring-search-down-history() {
   false
 }
 
+function _history-substring-search-not-found() {
+  #
+  # Nothing matched the search query, so put it back into the $BUFFER while
+  # highlighting it accordingly so the user can revise it and search again.
+  #
+  _history_substring_search_old_buffer=$BUFFER
+  BUFFER=$_history_substring_search_query
+  _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+}
+
 function _history-substring-search-up-search() {
   _history_substring_search_refresh_display=true
 
@@ -440,9 +450,7 @@ function _history-substring-search-up-search() {
     #    to highlight the current buffer.
     #
     (( _history_substring_search_match_index-- ))
-    _history_substring_search_old_buffer=$BUFFER
-    BUFFER=$_history_substring_search_query
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    _history-substring-search-not-found
 
   elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count_plus ]]; then
     #
@@ -459,6 +467,12 @@ function _history-substring-search-up-search() {
     (( _history_substring_search_match_index-- ))
     BUFFER=$_history_substring_search_old_buffer
     _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+
+  else
+    #
+    # We are at the beginning of history and there are no further matches.
+    #
+    _history-substring-search-not-found
   fi
 }
 
@@ -520,9 +534,7 @@ function _history-substring-search-down-search() {
     #    to highlight the current buffer.
     #
     (( _history_substring_search_match_index++ ))
-    _history_substring_search_old_buffer=$BUFFER
-    BUFFER=$_history_substring_search_query
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+    _history-substring-search-not-found
 
   elif [[ $_history_substring_search_match_index -eq 0 ]]; then
     #
@@ -539,6 +551,12 @@ function _history-substring-search-down-search() {
     (( _history_substring_search_match_index++ ))
     BUFFER=$_history_substring_search_old_buffer
     _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+
+  else
+    #
+    # We are at the end of history and there are no further matches.
+    #
+    _history-substring-search-not-found
   fi
 }
 
