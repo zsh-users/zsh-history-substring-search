@@ -179,7 +179,7 @@ fi
 function _history-substring-search-begin() {
   setopt localoptions extendedglob
 
-  _history_substring_search_refresh_display=false
+  _history_substring_search_refresh_display=
   _history_substring_search_query_highlight=
 
   #
@@ -251,7 +251,7 @@ function _history-substring-search-end() {
 
   # the search was succesful so display the result properly by clearing away
   # existing highlights and moving the cursor to the end of the result buffer
-  if [[ $_history_substring_search_refresh_display == true ]]; then
+  if [[ $_history_substring_search_refresh_display -eq 1 ]]; then
     region_highlight=()
     CURSOR=${#BUFFER}
   fi
@@ -277,7 +277,7 @@ function _history-substring-search-end() {
   # read -k -t 200 && zle -U $REPLY
 
   # Exit successfully from the history-substring-search-* widgets.
-  true
+  return 0
 }
 
 function _history-substring-search-up-buffer() {
@@ -306,7 +306,7 @@ function _history-substring-search-up-buffer() {
     return 0
   fi
 
-  false
+  return 1
 }
 
 function _history-substring-search-down-buffer() {
@@ -335,7 +335,7 @@ function _history-substring-search-down-buffer() {
     return 0
   fi
 
-  false
+  return 1
 }
 
 function _history-substring-search-up-history() {
@@ -357,7 +357,7 @@ function _history-substring-search-up-history() {
     return 0
   fi
 
-  false
+  return 1
 }
 
 function _history-substring-search-down-history() {
@@ -370,7 +370,7 @@ function _history-substring-search-down-history() {
     # going down from the absolute top of history
     if [[ $HISTNO -eq 1 && -z $BUFFER ]]; then
       BUFFER=${history[1]}
-      _history_substring_search_refresh_display=true
+      _history_substring_search_refresh_display=1
 
     # going down from somewhere above the bottom of history
     else
@@ -380,7 +380,7 @@ function _history-substring-search-down-history() {
     return 0
   fi
 
-  false
+  return 1
 }
 
 function _history-substring-search-not-found() {
@@ -394,7 +394,7 @@ function _history-substring-search-not-found() {
 }
 
 function _history-substring-search-up-search() {
-  _history_substring_search_refresh_display=true
+  _history_substring_search_refresh_display=1
 
   #
   # Highlight matches during history-substring-up-search:
@@ -477,7 +477,7 @@ function _history-substring-search-up-search() {
 }
 
 function _history-substring-search-down-search() {
-  _history_substring_search_refresh_display=true
+  _history_substring_search_refresh_display=1
 
   #
   # Highlight matches during history-substring-up-search:
