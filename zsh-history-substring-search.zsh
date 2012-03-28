@@ -179,7 +179,7 @@ fi
 function _history-substring-search-begin() {
   setopt localoptions extendedglob
 
-  _history_substring_search_move_cursor_eol=false
+  _history_substring_search_refresh_display=false
   _history_substring_search_query_highlight=
 
   #
@@ -249,8 +249,10 @@ function _history-substring-search-end() {
 
   _history_substring_search_result=$BUFFER
 
-  # move the cursor to the end of the command line
-  if [[ $_history_substring_search_move_cursor_eol == true ]]; then
+  # the search was succesful so display the result properly by clearing away
+  # existing highlights and moving the cursor to the end of the result buffer
+  if [[ $_history_substring_search_refresh_display == true ]]; then
+    region_highlight=()
     CURSOR=${#BUFFER}
   fi
 
@@ -368,7 +370,7 @@ function _history-substring-search-down-history() {
     # going down from the absolute top of history
     if [[ $HISTNO -eq 1 && -z $BUFFER ]]; then
       BUFFER=${history[1]}
-      _history_substring_search_move_cursor_eol=true
+      _history_substring_search_refresh_display=true
 
     # going down from somewhere above the bottom of history
     else
@@ -382,7 +384,7 @@ function _history-substring-search-down-history() {
 }
 
 function _history-substring-search-up-search() {
-  _history_substring_search_move_cursor_eol=true
+  _history_substring_search_refresh_display=true
 
   #
   # Highlight matches during history-substring-up-search:
@@ -461,7 +463,7 @@ function _history-substring-search-up-search() {
 }
 
 function _history-substring-search-down-search() {
-  _history_substring_search_move_cursor_eol=true
+  _history_substring_search_refresh_display=true
 
   #
   # Highlight matches during history-substring-up-search:
