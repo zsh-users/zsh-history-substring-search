@@ -303,7 +303,7 @@ function _history-substring-search-up-buffer() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xlbuflines -ne 1 ]]; then
     zle up-line-or-history
-    return true
+    return 0
   fi
 
   false
@@ -332,7 +332,7 @@ function _history-substring-search-down-buffer() {
 
   if [[ $#buflines -gt 1 && $CURSOR -ne $#BUFFER && $#xrbuflines -ne 1 ]]; then
     zle down-line-or-history
-    return true
+    return 0
   fi
 
   false
@@ -354,7 +354,7 @@ function _history-substring-search-up-history() {
       zle up-line-or-history
     fi
 
-    return true
+    return 0
   fi
 
   false
@@ -377,7 +377,7 @@ function _history-substring-search-down-history() {
       zle down-line-or-history
     fi
 
-    return true
+    return 0
   fi
 
   false
