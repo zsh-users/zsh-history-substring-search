@@ -4,6 +4,7 @@ zsh-history-substring-search
 This is a clean-room implementation of the [Fish shell][1]'s history search
 feature, where you can type in any part of any previously entered command
 and press the UP and DOWN arrow keys to cycle through the matching commands.
+You can also use K and J in VI mode or ^P and ^N in EMACS mode for the same.
 
 [1]: http://fishshell.com
 [2]: http://www.zsh.org/mla/users/2009/msg00818.html
