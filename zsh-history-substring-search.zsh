@@ -72,8 +72,26 @@ function history-substring-search-down() {
 zle -N history-substring-search-up
 zle -N history-substring-search-down
 
-bindkey '\e[A' history-substring-search-up
-bindkey '\e[B' history-substring-search-down
+#-----------------------------------------------------------------------------
+# shortcut key bindings
+#-----------------------------------------------------------------------------
+
+# bind P and N for EMACS mode
+bindkey -M emacs '^P' history-substring-search-up
+bindkey -M emacs '^N' history-substring-search-down
+
+# bind k and j for VI mode
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+# bind up and down arrow keys
+for keymap in 'emacs' 'viins'; do
+  for keycode in '' '0'; do
+    bindkey -M $keymap '\e['$keycode'A' history-substring-search-up
+    bindkey -M $keymap '\e['$keycode'B' history-substring-search-down
+  done
+done
+unset keymap keycode
 
 #-----------------------------------------------------------------------------
 # implementation details
