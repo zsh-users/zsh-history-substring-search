@@ -85,13 +85,11 @@ bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 
 # bind up and down arrow keys
-for keymap in 'emacs' 'viins'; do
-  for keycode in '' '0'; do
-    bindkey -M $keymap '\e['$keycode'A' history-substring-search-up
-    bindkey -M $keymap '\e['$keycode'B' history-substring-search-down
-  done
+for keycode in '[' '0'; do
+  bindkey "^[${keycode}A" history-substring-search-up
+  bindkey "^[${keycode}B" history-substring-search-down
 done
-unset keymap keycode
+unset keycode
 
 #-----------------------------------------------------------------------------
 # implementation details
