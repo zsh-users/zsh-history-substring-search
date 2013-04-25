@@ -27,7 +27,24 @@ Usage
         % source zsh-syntax-highlighting.zsh
         % source zsh-history-substring-search.zsh
 
-2.  Type any part of any previous command and then:
+2.  Bind keyboard shortcuts to this script's functions:
+
+        # bind UP and DOWN arrow keys
+        for keycode in '[' '0'; do
+          bindkey "^[${keycode}A" history-substring-search-up
+          bindkey "^[${keycode}B" history-substring-search-down
+        done
+        unset keycode
+
+        # bind P and N for EMACS mode
+        bindkey -M emacs '^P' history-substring-search-up
+        bindkey -M emacs '^N' history-substring-search-down
+
+        # bind k and j for VI mode
+        bindkey -M vicmd 'k' history-substring-search-up
+        bindkey -M vicmd 'j' history-substring-search-down
+
+3.  Type any part of any previous command and then:
 
     * Press the UP arrow key to select the nearest command that (1) contains
       your query and (2) is older than the current command in the command
@@ -39,7 +56,7 @@ Usage
 
     * Press ^U (the Control and U keys simultaneously) to abort the search.
 
-3.  If a matching command spans more than one line of text, press the LEFT
+4.  If a matching command spans more than one line of text, press the LEFT
     arrow key to move the cursor away from the end of the command, and then:
 
     * Press the UP arrow key to move the cursor to the line above.  When the
