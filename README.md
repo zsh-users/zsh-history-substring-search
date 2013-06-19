@@ -30,11 +30,9 @@ Usage
 2.  Bind keyboard shortcuts to this script's functions:
 
         # bind UP and DOWN arrow keys
-        for keycode in '[' 'O'; do
-          bindkey "^[${keycode}A" history-substring-search-up
-          bindkey "^[${keycode}B" history-substring-search-down
-        done
-        unset keycode
+        zmodload zsh/terminfo
+        bindkey "$terminfo[kcuu1]" history-substring-search-up
+        bindkey "$terminfo[kcud1]" history-substring-search-down
 
         # bind P and N for EMACS mode
         bindkey -M emacs '^P' history-substring-search-up
