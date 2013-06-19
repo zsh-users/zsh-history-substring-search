@@ -30,7 +30,7 @@ Usage
 2.  Bind keyboard shortcuts to this script's functions:
 
         # bind UP and DOWN arrow keys
-        for keycode in '[' '0'; do
+        for keycode in '[' 'O'; do
           bindkey "^[${keycode}A" history-substring-search-up
           bindkey "^[${keycode}B" history-substring-search-down
         done
