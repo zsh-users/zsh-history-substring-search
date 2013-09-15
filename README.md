@@ -42,6 +42,12 @@ Usage
         bindkey -M vicmd 'k' history-substring-search-up
         bindkey -M vicmd 'j' history-substring-search-down
 
+    Ubuntu 12.04 users might need to use this snippet instead:
+
+        # bind UP and DOWN arrow keys
+        bindkey '^[[A' history-substring-search-up
+        bindkey '^[[B' history-substring-search-down
+
 3.  Type any part of any previous command and then:
 
     * Press the UP arrow key to select the nearest command that (1) contains
