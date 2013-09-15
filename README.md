@@ -41,6 +41,11 @@ Usage
         # bind k and j for VI mode
         bindkey -M vicmd 'k' history-substring-search-up
         bindkey -M vicmd 'j' history-substring-search-down
+        
+        # If the general $terminfo trick doesn't work for you
+        bindkey '^[[A' history-substring-search-up
+        bindkey '^[[B' history-substring-search-down
+
 
 3.  Type any part of any previous command and then:
 
