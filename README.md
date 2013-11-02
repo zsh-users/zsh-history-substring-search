@@ -13,9 +13,15 @@ You can also use K and J in VI mode or ^P and ^N in EMACS mode for the same.
 [5]: https://github.com/zsh-users/zsh-history-substring-search
 [6]: https://github.com/zsh-users/zsh-syntax-highlighting
 
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Requirements
+------------------------------------------------------------------------------
+
+* [ZSH](http://zsh.sourceforge.net) 4.3 or newer
+
+------------------------------------------------------------------------------
 Usage
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 1.  Load this script into your interactive ZSH session:
 
@@ -71,9 +77,9 @@ Usage
       the cursor reaches the last line of the command, pressing the DOWN
       arrow key again will cause this script to perform another search.
 
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 Configuration
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 This script defines the following global variables. You may override their
 default values only after having loaded this script into your ZSH session.
@@ -97,9 +103,9 @@ default values only after having loaded this script into your ZSH session.
   Flags" section in the zshexpn(1) man page to learn about the kinds of
   values you may assign to this variable.
 
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 History
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 This script was originally written by [Peter Stephenson][2], who published it
 to the ZSH users mailing list (thereby making it public domain) in September
