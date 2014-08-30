@@ -48,7 +48,7 @@ Usage
         bindkey -M vicmd 'k' history-substring-search-up
         bindkey -M vicmd 'j' history-substring-search-down
 
-    Ubuntu 12.04 users might need to use this snippet instead:
+    Ubuntu 12.04 and MacOSX 10.9 users might need to use this snippet instead:
 
         # bind UP and DOWN arrow keys
         bindkey '^[[A' history-substring-search-up
