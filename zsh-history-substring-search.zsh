@@ -143,7 +143,7 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
 
     # Override ZLE widgets to make them invoke _zsh_highlight.
     local cur_widget
-    for cur_widget in ${${(f)"$(builtin zle -la)"}:#(.*|_*|orig-*|run-help|which-command|beep)}; do
+    for cur_widget in ${${(f)"$(builtin zle -la)"}:#(.*|_*|orig-*|run-help|which-command|beep|yank*)}; do
       case $widgets[$cur_widget] in
 
         # Already rebound event: do nothing.
