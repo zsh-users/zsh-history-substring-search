@@ -200,12 +200,10 @@ function _history-substring-search-begin() {
     #
     # Find all occurrences of the search query in the history file.
     #
-    # (k) turns it an array of line numbers.
+    # (k) returns the "keys" (history index numbers) instead of the values
+    # (Oa) reverses the order, because (R) returns results reversed.
     #
-    # (on) seems to remove duplicates, which are default
-    #      options. They can be turned off by (ON).
-    #
-    _history_substring_search_matches=(${(kon)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
+    _history_substring_search_matches=(${(kOa)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
 
     #
     # Define the range of values that $_history_substring_search_match_index
