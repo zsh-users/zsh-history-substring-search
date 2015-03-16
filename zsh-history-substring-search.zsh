@@ -205,6 +205,15 @@ function _history-substring-search-begin() {
     #
     _history_substring_search_matches=(${(kOa)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
 
+    # Remove duplicate entries (keeping on the most recent) if HIST_FIND_NO_DUPS is set.
+    if [[ -o HIST_FIND_NO_DUPS ]]; then
+        local -A unique_matches
+        for n in $_history_substring_search_matches; do
+            unique_matches[${history[$n]}]="$n"
+        done
+        _history_substring_search_matches=(${(@n)unique_matches})
+    fi
+
     #
     # Define the range of values that $_history_substring_search_match_index
     # can take: [0, $_history_substring_search_matches_count_plus].
