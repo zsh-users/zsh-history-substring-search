@@ -205,15 +205,6 @@ function _history-substring-search-begin() {
     #
     _history_substring_search_matches=(${(kOa)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
 
-    # Remove duplicate entries (keeping on the most recent) if HIST_FIND_NO_DUPS is set.
-    if [[ -o HIST_FIND_NO_DUPS ]]; then
-        local -A unique_matches
-        for n in $_history_substring_search_matches; do
-            unique_matches[${history[$n]}]="$n"
-        done
-        _history_substring_search_matches=(${(@n)unique_matches})
-    fi
-
     #
     # Define the range of values that $_history_substring_search_match_index
     # can take: [0, $_history_substring_search_matches_count_plus].
@@ -477,6 +468,18 @@ function _history-substring-search-up-search() {
     # We are at the beginning of history and there are no further matches.
     #
     _history-substring-search-not-found
+    return
+  fi
+
+  #
+  # When HIST_FIND_NO_DUPS is set, meaning that only unique command lines from
+  # history should be matched, make sure the new and old results are different.
+  #
+  if [[ -o HIST_FIND_NO_DUPS && $BUFFER == $_history_substring_search_result ]]; then
+    #
+    # Repeat the current search so that a different (unique) match is found.
+    #
+    _history-substring-search-up-search
   fi
 }
 
@@ -561,6 +564,18 @@ function _history-substring-search-down-search() {
     # We are at the end of history and there are no further matches.
     #
     _history-substring-search-not-found
+    return
+  fi
+
+  #
+  # When HIST_FIND_NO_DUPS is set, meaning that only unique command lines from
+  # history should be matched, make sure the new and old results are different.
+  #
+  if [[ -o HIST_FIND_NO_DUPS && $BUFFER == $_history_substring_search_result ]]; then
+    #
+    # Repeat the current search so that a different (unique) match is found.
+    #
+    _history-substring-search-down-search
   fi
 }
 
