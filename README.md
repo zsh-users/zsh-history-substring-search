@@ -103,6 +103,8 @@ default values only after having loaded this script into your ZSH session.
   Flags" section in the zshexpn(1) man page to learn about the kinds of
   values you may assign to this variable.
 
+To always receive _unique_ search results, use `setopt HIST_IGNORE_ALL_DUPS`.
+
 ------------------------------------------------------------------------------
 History
 ------------------------------------------------------------------------------
