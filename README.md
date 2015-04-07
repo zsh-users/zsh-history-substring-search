@@ -104,6 +104,12 @@ default values only after having loaded this script into your ZSH session.
   values you may assign to this variable.
 
 To always receive _unique_ search results, use `setopt HIST_IGNORE_ALL_DUPS`.
+Alternatively, use `setopt HIST_FIND_NO_DUPS` which makes this plugin skip
+duplicate _adjacent_ search results as you cycle through them---however, this
+does not guarantee that search results are unique: if your search results were
+"Dog", "Dog", "HotDog", "Dog", then cycling them gives "Dog", "HotDog", "Dog".
+Notice that the "Dog" search result appeared twice as you cycled through them!
+If you wish to avoid this limitation, then use `setopt HIST_IGNORE_ALL_DUPS`.
 
 ------------------------------------------------------------------------------
 History
