@@ -49,7 +49,7 @@ HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
 # the main ZLE widgets
 #-----------------------------------------------------------------------------
 
-function history-substring-search-up() {
+history-substring-search-up() {
   _history-substring-search-begin
 
   _history-substring-search-up-history ||
@@ -59,7 +59,7 @@ function history-substring-search-up() {
   _history-substring-search-end
 }
 
-function history-substring-search-down() {
+history-substring-search-down() {
   _history-substring-search-begin
 
   _history-substring-search-down-history ||
@@ -90,7 +90,7 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   # simply removes any existing highlights when the
   # user inserts printable characters into $BUFFER.
   #
-  function _zsh_highlight() {
+  _zsh_highlight() {
     if [[ $KEYS == [[:print:]] ]]; then
       region_highlight=()
     fi
@@ -173,7 +173,7 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   _zsh_highlight_bind_widgets
 fi
 
-function _history-substring-search-begin() {
+_history-substring-search-begin() {
   setopt localoptions extendedglob
 
   _history_substring_search_refresh_display=
@@ -239,7 +239,7 @@ function _history-substring-search-begin() {
   fi
 }
 
-function _history-substring-search-end() {
+_history-substring-search-end() {
   setopt localoptions extendedglob
 
   _history_substring_search_result=$BUFFER
@@ -275,7 +275,7 @@ function _history-substring-search-end() {
   return 0
 }
 
-function _history-substring-search-up-buffer() {
+_history-substring-search-up-buffer() {
   #
   # Check if the UP arrow was pressed to move the cursor within a multi-line
   # buffer. This amounts to three tests:
@@ -304,7 +304,7 @@ function _history-substring-search-up-buffer() {
   return 1
 }
 
-function _history-substring-search-down-buffer() {
+_history-substring-search-down-buffer() {
   #
   # Check if the DOWN arrow was pressed to move the cursor within a multi-line
   # buffer. This amounts to three tests:
@@ -333,7 +333,7 @@ function _history-substring-search-down-buffer() {
   return 1
 }
 
-function _history-substring-search-up-history() {
+_history-substring-search-up-history() {
   #
   # Behave like up in ZSH, except clear the $BUFFER
   # when beginning of history is reached like in Fish.
@@ -355,7 +355,7 @@ function _history-substring-search-up-history() {
   return 1
 }
 
-function _history-substring-search-down-history() {
+_history-substring-search-down-history() {
   #
   # Behave like down-history in ZSH, except clear the
   # $BUFFER when end of history is reached like in Fish.
@@ -378,7 +378,7 @@ function _history-substring-search-down-history() {
   return 1
 }
 
-function _history-substring-search-not-found() {
+_history-substring-search-not-found() {
   #
   # Nothing matched the search query, so put it back into the $BUFFER while
   # highlighting it accordingly so the user can revise it and search again.
@@ -388,7 +388,7 @@ function _history-substring-search-not-found() {
   _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 }
 
-function _history-substring-search-up-search() {
+_history-substring-search-up-search() {
   _history_substring_search_refresh_display=1
 
   #
@@ -484,7 +484,7 @@ function _history-substring-search-up-search() {
   fi
 }
 
-function _history-substring-search-down-search() {
+_history-substring-search-down-search() {
   _history_substring_search_refresh_display=1
 
   #
