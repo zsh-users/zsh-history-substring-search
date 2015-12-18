@@ -1,4 +1,6 @@
-# This file integrates the zsh-history-substring-search script into oh-my-zsh.
+# This file configures zsh-history-substring-search as a plugin so it can
+# be loaded by oh-my-zsh-compatible ZSH frameworks like zgen, antigen and
+# zplug.
 
 source "${0:r:r}.zsh"
 
