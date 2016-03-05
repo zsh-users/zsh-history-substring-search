@@ -201,40 +201,37 @@ _history-substring-search-begin() {
     # Find all occurrences of the search query in the history file.
     #
     # (k) returns the "keys" (history index numbers) instead of the values
-    # (Oa) reverses the order, because (R) returns results reversed.
+    # (R) returns values in reverse older, so the index of the youngest
+    # matching history entry is at the head of the list.
     #
-    _history_substring_search_matches=(${(kOa)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
+    _history_substring_search_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
 
     #
     # Define the range of values that $_history_substring_search_match_index
-    # can take: [0, $_history_substring_search_matches_count_plus].
+    # can take: [0, $_history_substring_search_matches_count + 1].
     #
     _history_substring_search_matches_count=$#_history_substring_search_matches
-    _history_substring_search_matches_count_plus=$(( _history_substring_search_matches_count + 1 ))
-    _history_substring_search_matches_count_sans=$(( _history_substring_search_matches_count - 1 ))
 
     #
     # If $_history_substring_search_match_index is equal to
-    # $_history_substring_search_matches_count_plus, this indicates that we
-    # are beyond the beginning of $_history_substring_search_matches.
+    # $_history_substring_search_matches_count + 1, this indicates that we
+    # are beyond the end of $_history_substring_search_matches.
     #
     # If $_history_substring_search_match_index is equal to 0, this indicates
-    # that we are beyond the end of $_history_substring_search_matches.
+    # that we are beyond the beginning of $_history_substring_search_matches.
     #
     # If we have initially pressed "up" we have to initialize
-    # $_history_substring_search_match_index to
-    # $_history_substring_search_matches_count_plus so that it will be
-    # decreased to $_history_substring_search_matches_count.
+    # $_history_substring_search_match_index to 0 so that it will be
+    # incremented to 1.
     #
     # If we have initially pressed "down" we have to initialize
-    # $_history_substring_search_match_index to
-    # $_history_substring_search_matches_count so that it will be increased to
-    # $_history_substring_search_matches_count_plus.
+    # $_history_substring_search_match_index to 1 so that it will be
+    # decremented to 0.
     #
     if [[ $WIDGET == history-substring-search-down ]]; then
-       _history_substring_search_match_index=$_history_substring_search_matches_count
+       _history_substring_search_match_index=1
     else
-      _history_substring_search_match_index=$_history_substring_search_matches_count_plus
+      _history_substring_search_match_index=0
     fi
   fi
 }
@@ -244,7 +241,7 @@ _history-substring-search-end() {
 
   _history_substring_search_result=$BUFFER
 
-  # the search was succesful so display the result properly by clearing away
+  # the search was successful so display the result properly by clearing away
   # existing highlights and moving the cursor to the end of the result buffer
   if [[ $_history_substring_search_refresh_display -eq 1 ]]; then
     region_highlight=()
@@ -378,12 +375,30 @@ _history-substring-search-down-history() {
   return 1
 }
 
+_history-substring-search-found() {
+  #
+  # A match is available. The index of the match is held in
+  # $_history_substring_search_match_index
+  #
+  # 1. Make $BUFFER equal to the matching history entry.
+  #
+  # 2. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+  #    to highlight the current buffer.
+  #
+  BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
+  _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+}
+
 _history-substring-search-not-found() {
   #
-  # Nothing matched the search query, so put it back into the $BUFFER while
-  # highlighting it accordingly so the user can revise it and search again.
+  # No more matches are available.
   #
-  _history_substring_search_old_buffer=$BUFFER
+  # 1. Make $BUFFER equal to $_history_substring_search_query so the user can
+  #    revise it and search again.
+  #
+  # 2. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
+  #    to highlight the current buffer.
+  #
   BUFFER=$_history_substring_search_query
   _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
 }
@@ -399,73 +414,48 @@ _history-substring-search-up-search() {
   #
   # $_history_substring_search_matches is the current list of matches
   # $_history_substring_search_matches_count is the current number of matches
-  # $_history_substring_search_matches_count_plus is the current number of matches + 1
-  # $_history_substring_search_matches_count_sans is the current number of matches - 1
   # $_history_substring_search_match_index is the index of the current match
   #
   # The range of values that $_history_substring_search_match_index can take
-  # is: [0, $_history_substring_search_matches_count_plus].  A value of 0
-  # indicates that we are beyond the end of
+  # is: [0, $_history_substring_search_matches_count + 1].  A value of 0
+  # indicates that we are beyond the beginning of
   # $_history_substring_search_matches. A value of
-  # $_history_substring_search_matches_count_plus indicates that we are beyond
-  # the beginning of $_history_substring_search_matches.
+  # $_history_substring_search_matches_count + 1 indicates that we are beyond
+  # the end of $_history_substring_search_matches.
   #
   # In _history-substring-search-up-search() the initial value of
-  # $_history_substring_search_match_index is
-  # $_history_substring_search_matches_count_plus.  This value is set in
-  # _history-substring-search-begin().  _history-substring-search-up-search()
-  # will initially decrease it to $_history_substring_search_matches_count.
+  # $_history_substring_search_match_index is 0. This value is set in
+  # _history-substring-search-begin(). _history-substring-search-up-search()
+  # will initially increment it to 1.
   #
-  if [[ $_history_substring_search_match_index -ge 2 ]]; then
+  if [[ $_history_substring_search_match_index -lt $_history_substring_search_matches_count ]]; then
     #
-    # Highlight the next match:
+    # Pick the next (older) match:
     #
-    # 1. Decrease the value of $_history_substring_search_match_index.
+    # 1. Increment the value of $_history_substring_search_match_index.
     #
-    # 2. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
-    #    to highlight the current buffer.
+    # 2. Update display (search found)
     #
-    (( _history_substring_search_match_index-- ))
-    BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    (( _history_substring_search_match_index++ ))
+    _history-substring-search-found
 
-  elif [[ $_history_substring_search_match_index -eq 1 ]]; then
+  elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count ]]; then
     #
     # We will move beyond the end of $_history_substring_search_matches:
     #
-    # 1. Decrease the value of $_history_substring_search_match_index.
+    # 1. Increment the value of $_history_substring_search_match_index.
     #
-    # 2. Save the current buffer in $_history_substring_search_old_buffer,
-    #    so that it can be retrieved by
-    #    _history-substring-search-down-search() later.
+    # 2. Update display (search not found)
     #
-    # 3. Make $BUFFER equal to $_history_substring_search_query.
-    #
-    # 4. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
-    #    to highlight the current buffer.
-    #
-    (( _history_substring_search_match_index-- ))
+    (( _history_substring_search_match_index++ ))
     _history-substring-search-not-found
-
-  elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count_plus ]]; then
-    #
-    # We were beyond the beginning of $_history_substring_search_matches but
-    # UP makes us move back to $_history_substring_search_matches:
-    #
-    # 1. Decrease the value of $_history_substring_search_match_index.
-    #
-    # 2. Restore $BUFFER from $_history_substring_search_old_buffer.
-    #
-    # 3. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
-    #    to highlight the current buffer.
-    #
-    (( _history_substring_search_match_index-- ))
-    BUFFER=$_history_substring_search_old_buffer
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    return
 
   else
     #
-    # We are at the beginning of history and there are no further matches.
+    # We are beyond the end of $_history_substring_search_matches.
+    #
+    # 1. Update display (search not found)
     #
     _history-substring-search-not-found
     return
@@ -488,81 +478,55 @@ _history-substring-search-down-search() {
   _history_substring_search_refresh_display=1
 
   #
-  # Highlight matches during history-substring-up-search:
+  # Highlight matches during history-substring-down-search:
   #
   # The following constants have been initialized in
   # _history-substring-search-up/down-search():
   #
   # $_history_substring_search_matches is the current list of matches
   # $_history_substring_search_matches_count is the current number of matches
-  # $_history_substring_search_matches_count_plus is the current number of matches + 1
-  # $_history_substring_search_matches_count_sans is the current number of matches - 1
   # $_history_substring_search_match_index is the index of the current match
   #
   # The range of values that $_history_substring_search_match_index can take
-  # is: [0, $_history_substring_search_matches_count_plus].  A value of 0
-  # indicates that we are beyond the end of
+  # is: [0, $_history_substring_search_matches_count + 1].  A value of 0
+  # indicates that we are beyond the beginning of
   # $_history_substring_search_matches. A value of
-  # $_history_substring_search_matches_count_plus indicates that we are beyond
-  # the beginning of $_history_substring_search_matches.
+  # $_history_substring_search_matches_count + 1 indicates that we are beyond
+  # the end of $_history_substring_search_matches.
   #
   # In _history-substring-search-down-search() the initial value of
-  # $_history_substring_search_match_index is
-  # $_history_substring_search_matches_count.  This value is set in
-  # _history-substring-search-begin().
-  # _history-substring-search-down-search() will initially increase it to
-  # $_history_substring_search_matches_count_plus.
+  # $_history_substring_search_match_index is 1. This value is set in
+  # _history-substring-search-begin(). _history-substring-search-down-search()
+  # will initially decrement it to 0.
   #
-  if [[ $_history_substring_search_match_index -le $_history_substring_search_matches_count_sans ]]; then
+  if [[ $_history_substring_search_match_index -gt 1 ]]; then
     #
-    # Highlight the next match:
+    # Highlight the previous (younger) match:
     #
-    # 1. Increase $_history_substring_search_match_index by 1.
+    # 1. Decrement $_history_substring_search_match_index.
     #
-    # 2. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
-    #    to highlight the current buffer.
+    # 2. Update display (search found)
     #
-    (( _history_substring_search_match_index++ ))
-    BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    (( _history_substring_search_match_index-- ))
+    _history-substring-search-found
 
-  elif [[ $_history_substring_search_match_index -eq $_history_substring_search_matches_count ]]; then
+  elif [[ $_history_substring_search_match_index -eq 1 ]]; then
     #
     # We will move beyond the beginning of $_history_substring_search_matches:
     #
-    # 1. Increase $_history_substring_search_match_index by 1.
+    # 1. Decrement $_history_substring_search_match_index.
     #
-    # 2. Save the current buffer in $_history_substring_search_old_buffer, so
-    #    that it can be retrieved by _history-substring-search-up-search()
-    #    later.
+    # 2. Update display (search not found)
     #
-    # 3. Make $BUFFER equal to $_history_substring_search_query.
-    #
-    # 4. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
-    #    to highlight the current buffer.
-    #
-    (( _history_substring_search_match_index++ ))
+    (( _history_substring_search_match_index-- ))
     _history-substring-search-not-found
-
-  elif [[ $_history_substring_search_match_index -eq 0 ]]; then
-    #
-    # We were beyond the end of $_history_substring_search_matches but DOWN
-    # makes us move back to the $_history_substring_search_matches:
-    #
-    # 1. Increase $_history_substring_search_match_index by 1.
-    #
-    # 2. Restore $BUFFER from $_history_substring_search_old_buffer.
-    #
-    # 3. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
-    #    to highlight the current buffer.
-    #
-    (( _history_substring_search_match_index++ ))
-    BUFFER=$_history_substring_search_old_buffer
-    _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+    return
 
   else
     #
-    # We are at the end of history and there are no further matches.
+    # We are beyond the beginning of $_history_substring_search_matches.
+    #
+    # 1. Update display (search not found)
     #
     _history-substring-search-not-found
     return
