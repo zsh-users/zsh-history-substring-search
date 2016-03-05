@@ -180,13 +180,27 @@ _history-substring-search-begin() {
   _history_substring_search_query_highlight=
 
   #
-  # Continue using the previous $_history_substring_search_result by default,
-  # unless the current query was cleared or a new/different query was entered.
+  # If the buffer is the same as the previously displayed history substring
+  # search result, then just keep stepping through the match list. Otherwise
+  # start a new search.
   #
-  if [[ -z $BUFFER || $BUFFER != $_history_substring_search_result ]]; then
+  if [[ -n $BUFFER && $BUFFER == $_history_substring_search_result ]]; then
+    return;
+  fi
+
+  if [[ -z $BUFFER ]]; then
     #
-    # For the purpose of highlighting we will also keep
-    # a version without doubly-escaped meta characters.
+    # If the buffer is empty, we will just act like up-history/down-history
+    # in ZSH, so we do not need to actually search the history. This should
+    # speed things up a little.
+    #
+    _history_substring_search_query=
+    _history_substring_search_matches=()
+
+  else
+    #
+    # For the purpose of highlighting we keep a copy of the original
+    # query string.
     #
     _history_substring_search_query=$BUFFER
 
@@ -195,7 +209,7 @@ _history-substring-search-begin() {
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)".
     #
-    _history_substring_search_query_escaped=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
+    local escaped_query=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
 
     #
     # Find all occurrences of the search query in the history file.
@@ -204,35 +218,35 @@ _history-substring-search-begin() {
     # (R) returns values in reverse older, so the index of the youngest
     # matching history entry is at the head of the list.
     #
-    _history_substring_search_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${_history_substring_search_query_escaped}*]})
+    _history_substring_search_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
+  fi
 
-    #
-    # Define the range of values that $_history_substring_search_match_index
-    # can take: [0, $_history_substring_search_matches_count + 1].
-    #
-    _history_substring_search_matches_count=$#_history_substring_search_matches
+  #
+  # Define the range of values that $_history_substring_search_match_index
+  # can take: [0, $_history_substring_search_matches_count + 1].
+  #
+  _history_substring_search_matches_count=$#_history_substring_search_matches
 
-    #
-    # If $_history_substring_search_match_index is equal to
-    # $_history_substring_search_matches_count + 1, this indicates that we
-    # are beyond the end of $_history_substring_search_matches.
-    #
-    # If $_history_substring_search_match_index is equal to 0, this indicates
-    # that we are beyond the beginning of $_history_substring_search_matches.
-    #
-    # If we have initially pressed "up" we have to initialize
-    # $_history_substring_search_match_index to 0 so that it will be
-    # incremented to 1.
-    #
-    # If we have initially pressed "down" we have to initialize
-    # $_history_substring_search_match_index to 1 so that it will be
-    # decremented to 0.
-    #
-    if [[ $WIDGET == history-substring-search-down ]]; then
-       _history_substring_search_match_index=1
-    else
-      _history_substring_search_match_index=0
-    fi
+  #
+  # If $_history_substring_search_match_index is equal to
+  # $_history_substring_search_matches_count + 1, this indicates that we
+  # are beyond the end of $_history_substring_search_matches.
+  #
+  # If $_history_substring_search_match_index is equal to 0, this indicates
+  # that we are beyond the beginning of $_history_substring_search_matches.
+  #
+  # If we have initially pressed "up" we have to initialize
+  # $_history_substring_search_match_index to 0 so that it will be
+  # incremented to 1.
+  #
+  # If we have initially pressed "down" we have to initialize
+  # $_history_substring_search_match_index to 1 so that it will be
+  # decremented to 0.
+  #
+  if [[ $WIDGET == history-substring-search-down ]]; then
+     _history_substring_search_match_index=1
+  else
+    _history_substring_search_match_index=0
   fi
 }
 
@@ -256,7 +270,7 @@ _history-substring-search-end() {
     #
     # The following expression yields a variable $MBEGIN, which
     # indicates the begin position + 1 of the first occurrence
-    # of _history_substring_search_query_escaped in $BUFFER.
+    # of _history_substring_search_query in $BUFFER.
     #
     : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($_history_substring_search_query##)}
     local begin=$(( MBEGIN - 1 ))
