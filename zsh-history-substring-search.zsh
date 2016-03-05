@@ -44,6 +44,7 @@
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
+unset HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE
 
 #-----------------------------------------------------------------------------
 # the main ZLE widgets
@@ -219,6 +220,50 @@ _history-substring-search-begin() {
     # matching history entry is at the head of the list.
     #
     _history_substring_search_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
+
+    #
+    # If HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE is set to a non-empty value,
+    # then ensure that only unique matches are presented to the user.
+    # When HIST_IGNORE_ALL_DUPS is set, ZSH already ensures a unique history,
+    # so in this case we do not need to do anything.
+    #
+    if [[ ! -o HIST_IGNORE_ALL_DUPS && -n "$HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE" ]]; then
+      #
+      # We use an associative array (filter) as a 'set' data structure to
+      # collect only unique matches. If an entry (key) is already in the
+      # set (non-empty value), then we have already seen it before and will
+      # ignore it. Otherwise we add the entry both to the set and the list
+      # of unique matches
+      #
+      local -A filter
+      local -a unique_matches
+
+      #
+      # Iterate through all matching history indices in younger to older
+      # order. This ensures that younger entries are always presented before
+      # older entries.
+      #
+      for index in $_history_substring_search_matches; do
+        #
+        # Get that actual history entry at this index
+        #
+        local entry=${history[$index]}
+
+        if [[ -z ${filter[$entry]} ]]; then
+          #
+          # This is a new unique entry. Add it to the filter and the list
+          # of unique matches.
+          #
+          filter[$entry]=1
+          unique_matches+=($index)
+        fi
+      done
+
+      #
+      # Use the unique entries only
+      #
+      _history_substring_search_matches=($unique_matches)
+    fi
   fi
 
   #
