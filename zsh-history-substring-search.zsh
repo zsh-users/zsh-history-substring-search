@@ -190,6 +190,11 @@ _history-substring-search-begin() {
     return;
   fi
 
+  #
+  # Clear the previous result.
+  #
+  _history_substring_search_result=''
+
   if [[ -z $BUFFER ]]; then
     #
     # If the buffer is empty, we will just act like up-history/down-history
