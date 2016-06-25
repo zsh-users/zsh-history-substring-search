@@ -110,13 +110,19 @@ default values only after having loaded this script into your ZSH session.
   Flags" section in the zshexpn(1) man page to learn about the kinds of
   values you may assign to this variable.
 
-To always receive _unique_ search results, use `setopt HIST_IGNORE_ALL_DUPS`.
-Alternatively, use `setopt HIST_FIND_NO_DUPS` which makes this plugin skip
-duplicate _adjacent_ search results as you cycle through them---however, this
-does not guarantee that search results are unique: if your search results were
-"Dog", "Dog", "HotDog", "Dog", then cycling them gives "Dog", "HotDog", "Dog".
-Notice that the "Dog" search result appeared twice as you cycled through them!
-If you wish to avoid this limitation, then use `setopt HIST_IGNORE_ALL_DUPS`.
+* HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE is a global variable that defines
+  whether all search results returned are _unique_. If set to a non-empty
+  value, then only unique search results are presented. This behaviour is off
+  by default. An alternative way to ensure that search results are unique is
+  to use `setopt HIST_IGNORE_ALL_DUPS`. If this configuration variable is off
+  and `setopt HIST_IGNORE_ALL_DUPS` is unset, then `setopt HIST_FIND_NO_DUPS`
+  is still respected and it makes this plugin skip duplicate _adjacent_ search
+  results as you cycle through them, but this does not guarantee that search
+  results are unique: if your search results were "Dog", "Dog", "HotDog",
+  "Dog", then cycling them gives "Dog", "HotDog", "Dog". Notice that the "Dog"
+  search result appeared twice as you cycled through them. If you wish to
+  receive globally unique search results only once, then use this
+  configuration variable, or use `setopt HIST_IGNORE_ALL_DUPS`.
 
 ------------------------------------------------------------------------------
 History
