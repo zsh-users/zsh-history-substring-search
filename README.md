@@ -129,7 +129,7 @@ History
 ------------------------------------------------------------------------------
 
 This script was originally written by [Peter Stephenson][2], who published it
-to the ZSH users mailing list (thereby making it public domain) in September
+to the ZSH users mailing list in September
 2009. It was later revised by Guido van Steen and released under the BSD
 license (see below) as part of [the fizsh project][3] in January 2011.
 
