@@ -128,14 +128,18 @@ default values only after having loaded this script into your ZSH session.
 History
 ------------------------------------------------------------------------------
 
-This script was originally written by [Peter Stephenson][2], who published it
-to the ZSH users mailing list in September 2009. It was later revised by Guido
-van Steen and released under the BSD license (see below) as part of [the fizsh
-project][3] in January 2011.
+* September 2009: [Peter Stephenson][2] originally wrote this script and it
+  published to the zsh-users mailing list.
 
-It was later extracted from fizsh release 1.0.1, refactored heavily, and
-repackaged as both an [oh-my-zsh plugin][4] and as an independently loadable
-[ZSH script][5] by Suraj N. Kurapati in 2011.
+* January 2011: Guido van Steen (@guidovansteen) revised this script and
+  released it under the 3-clause BSD license as part of [fizsh][3], the
+  Friendly Interactive ZSHell.
 
-It was [further developed][4] by Guido van Steen, Suraj N. Kurapati, Sorin
-Ionescu, and Vincent Guerci in 2011.
+* January 2011: Suraj N. Kurapati (@sunaku) extracted this script from
+  [fizsh][3] 1.0.1, refactored it heavily, and finally repackaged it as an
+  [oh-my-zsh plugin][4] and as an independently loadable [ZSH script][5].
+
+* July 2011: Guido van Steen, Suraj N. Kurapati, and Sorin Ionescu
+  (@sorin-ionescu) [further developed it][4] with Vincent Guerci (@vguerci).
+
+* March 2016: Geza Lore (@gezalore) greatly refactored it in pull request #55.
