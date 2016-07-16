@@ -186,7 +186,7 @@ _history-substring-search-begin() {
   # search result, then just keep stepping through the match list. Otherwise
   # start a new search.
   #
-  if [[ -n $BUFFER && $BUFFER == $_history_substring_search_result ]]; then
+  if [[ -n $BUFFER && $BUFFER == ${_history_substring_search_result:-} ]]; then
     return;
   fi
 
