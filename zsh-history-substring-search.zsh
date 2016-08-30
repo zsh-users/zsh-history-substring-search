@@ -218,6 +218,12 @@ _history-substring-search-begin() {
     #
     local escaped_query=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
 
+    fuzzy_regex="*"
+    for char ({1..$#escaped_query}); do
+      [[ $char == '\' ]] && continue
+      fuzzy_regex+="${escaped_query[$char,$char]}*"
+    done
+
     #
     # Find all occurrences of the search query in the history file.
     #
@@ -225,7 +231,7 @@ _history-substring-search-begin() {
     # (R) returns values in reverse older, so the index of the youngest
     # matching history entry is at the head of the list.
     #
-    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
+    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)$fuzzy_regex]})
   fi
 
   #
