@@ -42,10 +42,10 @@
 # configuration variables
 #-----------------------------------------------------------------------------
 
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
-HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
-HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
+typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
+typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
+typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
+typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
 
 #-----------------------------------------------------------------------------
 # the main ZLE widgets
@@ -178,8 +178,11 @@ fi
 _history-substring-search-begin() {
   setopt localoptions extendedglob
 
-  _history_substring_search_refresh_display=
-  _history_substring_search_query_highlight=
+  typeset -g _history_substring_search_refresh_display=
+  typeset -g _history_substring_search_query_highlight=
+  
+  # Declare global variables that will be referenced in this function
+  typeset -g BUFFER MATCH
 
   #
   # If the buffer is the same as the previously displayed history substring
@@ -193,7 +196,7 @@ _history-substring-search-begin() {
   #
   # Clear the previous result.
   #
-  _history_substring_search_result=''
+  typeset -g _history_substring_search_result=''
 
   if [[ -z $BUFFER ]]; then
     #
@@ -202,14 +205,14 @@ _history-substring-search-begin() {
     # speed things up a little.
     #
     _history_substring_search_query=
-    _history_substring_search_raw_matches=()
+    typeset -g _history_substring_search_raw_matches=()
 
   else
     #
     # For the purpose of highlighting we keep a copy of the original
     # query string.
     #
-    _history_substring_search_query=$BUFFER
+    typeset -g _history_substring_search_query=$BUFFER
 
     #
     # $BUFFER contains the text that is in the command-line currently.
@@ -225,7 +228,7 @@ _history-substring-search-begin() {
     # (R) returns values in reverse older, so the index of the youngest
     # matching history entry is at the head of the list.
     #
-    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
+    typeset -g _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
   fi
 
   #
@@ -242,8 +245,8 @@ _history-substring-search-begin() {
   # If an entry (key) is in the set (non-empty value), then we have already
   # added that entry to _history_substring_search_matches.
   #
-  _history_substring_search_raw_match_index=0
-  _history_substring_search_matches=()
+  typeset -g _history_substring_search_raw_match_index=0
+  typeset -g _history_substring_search_matches=()
   unset _history_substring_search_unique_filter
   typeset -A -g _history_substring_search_unique_filter
 
@@ -266,9 +269,9 @@ _history-substring-search-begin() {
   # decremented to 0.
   #
   if [[ $WIDGET == history-substring-search-down ]]; then
-     _history_substring_search_match_index=1
+    typeset -g _history_substring_search_match_index=1
   else
-    _history_substring_search_match_index=0
+    typeset -g _history_substring_search_match_index=0
   fi
 }
 
@@ -281,7 +284,7 @@ _history-substring-search-end() {
   # existing highlights and moving the cursor to the end of the result buffer
   if [[ $_history_substring_search_refresh_display -eq 1 ]]; then
     region_highlight=()
-    CURSOR=${#BUFFER}
+    typeset -g CURSOR=${#BUFFER}
   fi
 
   # highlight command line using zsh-syntax-highlighting
@@ -294,6 +297,7 @@ _history-substring-search-end() {
     # indicates the begin position + 1 of the first occurrence
     # of _history_substring_search_query in $BUFFER.
     #
+    typeset -g MBEGIN MEND
     : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($_history_substring_search_query##)}
     local begin=$(( MBEGIN - 1 ))
     local end=$(( begin + $#_history_substring_search_query ))
