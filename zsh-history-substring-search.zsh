@@ -220,8 +220,8 @@ _history-substring-search-begin() {
 
     fuzzy_regex="*"
     for char ({1..$#escaped_query}); do
-      [[ escaped_query[$char] == '\' ]] && continue
-      fuzzy_regex+="${escaped_query[$char]}*"
+      fuzzy_regex+="${escaped_query[$char]}"
+      [[ escaped_query[$char] != '\' ]] && fuzzy_regex+="*"
     done
 
     #
