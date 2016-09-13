@@ -204,7 +204,7 @@ _history-substring-search-begin() {
     # in ZSH, so we do not need to actually search the history. This should
     # speed things up a little.
     #
-    _history_substring_search_query=
+    typeset -g _history_substring_search_query=
     typeset -g _history_substring_search_raw_matches=()
 
   else
@@ -219,6 +219,7 @@ _history-substring-search-begin() {
     # we put an extra "\\" before meta characters such as "\(" and "\)",
     # so that they become "\\\(" and "\\\)".
     #
+    typeset -g MBEGIN MEND
     local escaped_query=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
 
     #
