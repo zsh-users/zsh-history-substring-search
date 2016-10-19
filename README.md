@@ -32,30 +32,25 @@ Usage
         % source zsh-syntax-highlighting.zsh
         % source zsh-history-substring-search.zsh
 
-2.  Bind keyboard shortcuts to this script's functions:
+2.  Bind keyboard shortcuts to this script's functions.
 
-        ## Arrow Keys ###########################################
+    Arrow keys:
+    * Run `cat -v` in your favorite terminal emulator to observe key codes.
+    * Press the UP arrow key and observe what is printed in your terminal.
+    * Press the DOWN arrow key and observe what is printed in your terminal.
+    * Press the Control and C keys simultaneously to terminate the `cat -v`.
+    * Use your observations from the previous steps to create key bindings.
+      For example, if you observed `^[[A` for UP and `^[[B` for DOWN, then:
 
-        # OPTION 1: for most systems
-        zmodload zsh/terminfo
-        bindkey "$terminfo[kcuu1]" history-substring-search-up
-        bindkey "$terminfo[kcud1]" history-substring-search-down
+            bindkey '^[[A' history-substring-search-up
+            bindkey '^[[B' history-substring-search-down
 
-        # OPTION 2: for iTerm2 running on Apple MacBook laptops
-        zmodload zsh/terminfo
-        bindkey "$terminfo[cuu1]" history-substring-search-up
-        bindkey "$terminfo[cud1]" history-substring-search-down
-
-        # OPTION 3: for Ubuntu 12.04, Fedora 21, and MacOSX 10.9
-        bindkey '^[[A' history-substring-search-up
-        bindkey '^[[B' history-substring-search-down
-
-        ## EMACS mode ###########################################
+    You might also want to bind the Control-P/N keys for use in EMACS mode:
 
         bindkey -M emacs '^P' history-substring-search-up
         bindkey -M emacs '^N' history-substring-search-down
 
-        ## VI mode ##############################################
+    You might also want to bind the `k` and `j` keys for use in VI mode:
 
         bindkey -M vicmd 'k' history-substring-search-up
         bindkey -M vicmd 'j' history-substring-search-down
