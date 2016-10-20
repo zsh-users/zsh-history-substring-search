@@ -1,9 +1,8 @@
 # zsh-history-substring-search
 
 This is a clean-room implementation of the [Fish shell][1]'s history search
-feature, where you can type in any part of any previously entered command
-and press the UP and DOWN arrow keys to cycle through the matching commands.
-You can also use K and J in VI mode or ^P and ^N in EMACS mode for the same.
+feature, where you can type in any part of any command from history and then
+press chosen keys, such as the UP and DOWN arrows, to cycle through matches.
 
 [1]: http://fishshell.com
 [2]: http://www.zsh.org/mla/users/2009/msg00818.html
@@ -34,7 +33,7 @@ Usage
 
 2.  Bind keyboard shortcuts to this script's functions.
 
-    Arrow keys:
+    Users typically bind their UP and DOWN arrow keys to this script, thus:
     * Run `cat -v` in your favorite terminal emulator to observe key codes.
     * Press the UP arrow key and observe what is printed in your terminal.
     * Press the DOWN arrow key and observe what is printed in your terminal.
@@ -57,26 +56,30 @@ Usage
 
 3.  Type any part of any previous command and then:
 
-    * Press the UP arrow key to select the nearest command that (1) contains
-      your query and (2) is older than the current command in the command
-      history.
+    * Press the `history-substring-search-up` key, which was configured in
+      step 2 above, to select the nearest command that (1) contains your query
+      and (2) is also older than the current command in your command history.
 
-    * Press the DOWN arrow key to select the nearest command that (1)
-      contains your query and (2) is newer than the current command in the
-      command history.
+    * Press the `history-substring-search-down` key, which was configured in
+      step 2 above, to select the nearest command that (1) contains your query
+      and (2) is also newer than the current command in your command history.
 
-    * Press ^U (the Control and U keys simultaneously) to abort the search.
+    * Press `^U` the Control and U keys simultaneously to abort the search.
 
 4.  If a matching command spans more than one line of text, press the LEFT
     arrow key to move the cursor away from the end of the command, and then:
 
-    * Press the UP arrow key to move the cursor to the line above.  When the
-      cursor reaches the first line of the command, pressing the UP arrow
-      key again will cause this script to perform another search.
+    * Press the `history-substring-search-up` key, which was configured in
+      step 2 above, to move the cursor to the line above the cursored line.
+      When the cursor reaches the first line of the command, pressing the
+      `history-substring-search-up` key again will cause this script to
+      perform another search.
 
-    * Press the DOWN arrow key to move the cursor to the line below.  When
-      the cursor reaches the last line of the command, pressing the DOWN
-      arrow key again will cause this script to perform another search.
+    * Press the `history-substring-search-down` key, which was configured in
+      step 2 above, to move the cursor to the line below the cursored line.
+      When the cursor reaches the last line of the command, pressing the
+      `history-substring-search-down` key, which was configured in step 2
+      above, again will cause this script to perform another search.
 
 
 Configuration
@@ -110,7 +113,7 @@ default values only after having loaded this script into your ZSH session.
   by default. An alternative way to ensure that search results are unique is
   to use `setopt HIST_IGNORE_ALL_DUPS`. If this configuration variable is off
   and `setopt HIST_IGNORE_ALL_DUPS` is unset, then `setopt HIST_FIND_NO_DUPS`
-  is still respected and it makes this plugin skip duplicate _adjacent_ search
+  is still respected and it makes this script skip duplicate _adjacent_ search
   results as you cycle through them, but this does not guarantee that search
   results are unique: if your search results were "Dog", "Dog", "HotDog",
   "Dog", then cycling them gives "Dog", "HotDog", "Dog". Notice that the "Dog"
