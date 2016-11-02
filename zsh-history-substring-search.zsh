@@ -51,9 +51,9 @@ typeset -g _history_substring_search_refresh_display
 typeset -g _history_substring_search_query_highlight
 typeset -g _history_substring_search_result
 typeset -g _history_substring_search_query
-typeset -g _history_substring_search_raw_matches
+typeset -g -A _history_substring_search_raw_matches
 typeset -g _history_substring_search_raw_match_index
-typeset -g _history_substring_search_matches
+typeset -g -A _history_substring_search_matches
 typeset -g -A _history_substring_search_unique_filter
 typeset -g _history_substring_search_match_index
 
