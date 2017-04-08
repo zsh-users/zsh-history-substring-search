@@ -121,6 +121,12 @@ default values only after having loaded this script into your ZSH session.
   receive globally unique search results only once, then use this
   configuration variable, or use `setopt HIST_IGNORE_ALL_DUPS`.
 
+* `HISTORY_SUBSTRING_SEARCH_PRESERVE_CURSOR_POSITION` is a global variable
+  that defines whether or not the cursor position will be preserved where the
+  search occurred or if the cursor position moves to the end of the line. The
+  default behavior is to move to the end of the line. If set to a non-empty
+  value, the cursor position is preserved.
+
 
 History
 ------------------------------------------------------------------------------
