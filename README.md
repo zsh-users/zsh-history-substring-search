@@ -53,6 +53,10 @@ Usage
 
         bindkey -M vicmd 'k' history-substring-search-up
         bindkey -M vicmd 'j' history-substring-search-down
+    * (Note: There are cases, where `cat -v` lies to you. If the key codes
+      provided by `cat -v` didn't work for you, try pressing `<C-v><UP>`
+      and `<C-v><DOWN>` in the terminal and using the displayed key
+      codes instead.)
 
 3.  Type any part of any previous command and then:
 
