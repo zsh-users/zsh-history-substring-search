@@ -52,10 +52,10 @@ typeset -g _history_substring_search_query_highlight
 typeset -g _history_substring_search_result
 typeset -g _history_substring_search_query
 typeset -g -A _history_substring_search_raw_matches
-typeset -g _history_substring_search_raw_match_index
+typeset -g -i _history_substring_search_raw_match_index
 typeset -g -A _history_substring_search_matches
 typeset -g -A _history_substring_search_unique_filter
-typeset -g _history_substring_search_match_index
+typeset -g -i _history_substring_search_match_index
 
 #-----------------------------------------------------------------------------
 # configuration variables
@@ -447,7 +447,7 @@ _history_substring_search_process_raw_matches() {
     #
     # Move on to the next raw entry and get its history index.
     #
-    (( _history_substring_search_raw_match_index++ ))
+    _history_substring_search_raw_match_index+=1
     local index=${_history_substring_search_raw_matches[$_history_substring_search_raw_match_index]}
 
     #
@@ -627,7 +627,7 @@ _history-substring-search-up-search() {
     # 1. Move index to point to the next match.
     # 2. Update display to indicate search found.
     #
-    (( _history_substring_search_match_index++ ))
+    _history_substring_search_match_index+=1
     _history-substring-search-found
 
   else
@@ -638,7 +638,7 @@ _history-substring-search-up-search() {
     #    _history_substring_search_matches.
     # 2. Update display to indicate search not found.
     #
-    (( _history_substring_search_match_index++ ))
+    _history_substring_search_match_index+=1
     _history-substring-search-not-found
   fi
 
@@ -707,7 +707,7 @@ _history-substring-search-down-search() {
     # 1. Move index to point to the previous match.
     # 2. Update display to indicate search found.
     #
-    (( _history_substring_search_match_index-- ))
+    _history_substring_search_match_index+=-1
     _history-substring-search-found
 
   else
@@ -718,7 +718,7 @@ _history-substring-search-down-search() {
     #    _history_substring_search_matches.
     # 2. Update display to indicate search not found.
     #
-    (( _history_substring_search_match_index-- ))
+    _history_substring_search_match_index+=-1
     _history-substring-search-not-found
   fi
 
