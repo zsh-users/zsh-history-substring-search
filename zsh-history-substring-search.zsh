@@ -40,27 +40,7 @@
 ##############################################################################
 
 #-----------------------------------------------------------------------------
-# declare global variables
-#-----------------------------------------------------------------------------
-
-typeset -g BUFFER MATCH MBEGIN MEND CURSOR
-typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
-typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND
-typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS
-typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE
-typeset -g _history_substring_search_refresh_display
-typeset -g _history_substring_search_query_highlight
-typeset -g _history_substring_search_result
-typeset -g _history_substring_search_query
-typeset -g -a _history_substring_search_query_parts
-typeset -g -A _history_substring_search_raw_matches
-typeset -g -i _history_substring_search_raw_match_index
-typeset -g -A _history_substring_search_matches
-typeset -g -A _history_substring_search_unique_filter
-typeset -g -i _history_substring_search_match_index
-
-#-----------------------------------------------------------------------------
-# configuration variables
+# declare global configuration variables
 #-----------------------------------------------------------------------------
 
 typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
@@ -68,8 +48,22 @@ typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
 typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
 typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
-typeset -g _history_substring_search_{refresh_display,query_highlight,result,query,match_index,raw_match_index}
-typeset -ga _history_substring_search{,_raw}_matches
+
+#-----------------------------------------------------------------------------
+# declare internal global variables
+#-----------------------------------------------------------------------------
+
+typeset -g BUFFER MATCH MBEGIN MEND CURSOR
+typeset -g _history_substring_search_refresh_display
+typeset -g _history_substring_search_query_highlight
+typeset -g _history_substring_search_result
+typeset -g _history_substring_search_query
+typeset -g -a _history_substring_search_query_parts
+typeset -g -a _history_substring_search_raw_matches
+typeset -g -i _history_substring_search_raw_match_index
+typeset -g -a _history_substring_search_matches
+typeset -g -i _history_substring_search_match_index
+typeset -g -A _history_substring_search_unique_filter
 
 #-----------------------------------------------------------------------------
 # the main ZLE widgets
@@ -280,8 +274,7 @@ _history-substring-search-begin() {
   #
   _history_substring_search_raw_match_index=0
   _history_substring_search_matches=()
-  unset _history_substring_search_unique_filter
-  typeset -A -g _history_substring_search_unique_filter
+  _history_substring_search_unique_filter=()
 
   #
   # If $_history_substring_search_match_index is equal to
