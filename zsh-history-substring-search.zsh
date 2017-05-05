@@ -48,12 +48,15 @@ typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
 typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
 typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
+typeset -g HISTORY_SUBSTRING_SEARCH_MENU=''
+typeset -g HISTORY_SUBSTRING_SEARCH_MENU_SELECTED='standout'
+typeset -g HISTORY_SUBSTRING_SEARCH_MENU_SIZE=16
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
 #-----------------------------------------------------------------------------
 
-typeset -g BUFFER MATCH MBEGIN MEND CURSOR
+typeset -g BUFFER MATCH MBEGIN MEND CURSOR POSTDISPLAY
 typeset -g _history_substring_search_refresh_display
 typeset -g _history_substring_search_query_highlight
 typeset -g _history_substring_search_result
@@ -64,6 +67,9 @@ typeset -g -i _history_substring_search_raw_match_index
 typeset -g -a _history_substring_search_matches
 typeset -g -i _history_substring_search_match_index
 typeset -g -A _history_substring_search_unique_filter
+typeset -g -A _history_substring_search_cache
+typeset -g -i _history_substring_search_menu_top
+typeset -g -i _history_substring_search_menu_bot
 
 #-----------------------------------------------------------------------------
 # the main ZLE widgets
@@ -277,6 +283,14 @@ _history-substring-search-begin() {
   _history_substring_search_unique_filter=()
 
   #
+  # We cache some of the data computed for speed.
+  #
+  _history_substring_search_cache=()
+
+  _history_substring_search_menu_top=0
+  _history_substring_search_menu_bot=0
+
+  #
   # If $_history_substring_search_match_index is equal to
   # $#_history_substring_search_matches + 1, this indicates that we
   # are beyond the end of $_history_substring_search_matches and that we
@@ -295,7 +309,7 @@ _history-substring-search-begin() {
   # decremented to 0.
   #
   if [[ $WIDGET == history-substring-search-down ]]; then
-     _history_substring_search_match_index=1
+    _history_substring_search_match_index=1
   else
     _history_substring_search_match_index=0
   fi
@@ -333,12 +347,210 @@ _history-substring-search-end() {
     done
   fi
 
+  # Draw the menu if required
+  if [[ -n $HISTORY_SUBSTRING_SEARCH_MENU ]]; then
+    _history-substring-search-display-menu
+  fi
+
   # For debugging purposes:
   # zle -R "mn: "$_history_substring_search_match_index" m#: "${#_history_substring_search_matches}
   # read -k -t 200 && zle -U $REPLY
 
   # Exit successfully from the history-substring-search-* widgets.
   return 0
+}
+
+_history-substring-search-display-menu() {
+
+  local index   # History index of currently drawn menu item
+  local offset  # Offset from the selected history entry
+  local base    # Character offset of current menu item in POSTDISPLAY
+  local curr_history_entry
+  local prev_history_entry
+
+  # Clear the POSTDISPLAY
+  POSTDISPLAY=""
+
+  # Compute the bounds of the menu
+  _history-substring-search-update-menu-bounds
+
+  # Iterate through the indices of the menu items
+  for (( index = _history_substring_search_menu_top ; index >= _history_substring_search_menu_bot ; index-- )) do
+    offset=$(($index - $_history_substring_search_match_index))
+
+    base=$(($#BUFFER + $#POSTDISPLAY + 1))
+
+    # The current menu item we are drawing
+    _history-substring-search-formatted-result curr_history_entry $index
+
+    # Append the line to POSTDISPLAY with a newline in between
+    POSTDISPLAY="$POSTDISPLAY
+$curr_history_entry"
+
+    # If this is the selected line, highlight the entire menu item
+    if [[ $offset -eq 0 ]]; then
+      region_highlight+=("$base $(($#BUFFER + $#POSTDISPLAY)) $HISTORY_SUBSTRING_SEARCH_MENU_SELECTED")
+    fi
+  done
+}
+
+_history-substring-search-update-menu-bounds() {
+  #
+  # Update _history_substring_search_menu_top and
+  # _history_substring_search_menu_bot to contain the selected result.
+  #
+
+  local max_menu_size=$HISTORY_SUBSTRING_SEARCH_MENU_SIZE
+
+  #
+  # We do not want to display a menu item for the indices beyond the 2 ends
+  # of history, so clip the index to the valid range
+  #
+  local index
+
+  if [[ $_history_substring_search_match_index -lt 1 ]]; then
+    index=1
+  elif [[ $_history_substring_search_match_index -gt $#_history_substring_search_matches ]]; then
+    index=$#_history_substring_search_matches
+  else
+    index=$_history_substring_search_match_index
+  fi
+
+
+  if [[ $index -gt $_history_substring_search_menu_top ]]; then
+    #
+    # The selected result is beyond the top of the menu.
+    # Put it at the bottom.
+    #
+    _history_substring_search_menu_top=$index
+
+    local menu_size=$(($_history_substring_search_menu_top - $_history_substring_search_menu_bot + 1))
+
+    if [[ $menu_size -gt $max_menu_size ]]; then
+       #
+       # The menu is too large. Truncate the bottom.
+       #
+      _history_substring_search_menu_bot=$(($_history_substring_search_menu_top - $max_menu_size + 1))
+    fi
+
+  elif [[ $index -lt $_history_substring_search_menu_bot ]]; then
+    #
+    # The selected result is beyond the bottom of the menu.
+    # Put it at the bottom.
+    #
+    _history_substring_search_menu_bot=$index
+
+    local menu_size=$(($_history_substring_search_menu_top - $_history_substring_search_menu_bot + 1))
+
+    if [[ $menu_size -gt $max_menu_size ]]; then
+       #
+       # The menu is too large. Truncate the top.
+       #
+      _history_substring_search_menu_top=$(($_history_substring_search_menu_bot + $max_menu_size - 1))
+    fi
+  fi
+}
+
+_history-substring-search-formatted-result() {
+  #
+  # Get the result at the given index, formatted for displaying as a menu
+  # item. We cache the result for performance.
+  #
+
+  # $1 is the name of the result parameter
+  local _resultvar=$1; shift
+
+  if [[ $index -lt 1 || $index -gt $#_history_substring_search_matches ]]; then
+    #
+    # If the index is out of range, the result is empty.
+    #
+    eval "$_resultvar="
+    return 0
+  fi
+
+  local key="formatted-result-$1"
+  local result=${_history_substring_search_cache[$key]}
+  if [[ -z $result ]]; then
+    #
+    # We do not have a cached result. Compute the result, and cache it.
+    #
+    result=$(_history-substring-search-compute-formatted-result $1)
+    _history_substring_search_cache[$key]=$result
+  fi
+
+  eval "$_resultvar=\$result"
+}
+
+_history-substring-search-compute-formatted-result() {
+  #
+  # Actually compute the formatted result. We will:
+  # 1. Emit multi-line results line by line.
+  # 2. Wrap long lines at word boundaries and mark wrapping by appending '\'.
+  # 3. Wrap words longer than the terminal width with no marking.
+  #
+
+  local index=$1                # Index of requested entry
+  local width=$(($COLUMNS - 1)) # Width of the menu
+  local -L $width padded_line   # temporary used for padding with whitespace
+                                # on the right
+
+  # The actual history search result
+  local entry=${history[${_history_substring_search_matches[$index]}]}
+
+  local line          # Iteration variable
+  local split_line    # Accumulator to hold words of a line that is too long.
+
+  # Split the history entry at newlines and iterate each line.
+  for line in ${(@f)entry}; do
+
+    # Zero the accumulator
+    split_line=""
+
+    #
+    # Split each line into words at whitespace and iterate the words.
+    #
+    for word in ${(@s/ /)line}; do
+      if [[ $(($#split_line + $#word + 1)) -le $width ]]; then
+        #
+        # The new word fits within a single line with the preceding text.
+        # Append it to the accumulator.
+        #
+        split_line="$split_line $word"
+      else
+        #
+        # The new word would make the current line too long.
+        #
+
+        # Emit the accumulator with '\' appended and pad on the right with
+        # whitespace. The padding is required so we can highlight the menu
+        # item in its whole width.
+        if [[ -n $split_line ]]; then
+          #
+          # split_line can be empty if a single word is longer than the width
+          # of the terminal, so only emmit the line if it is non empty.
+          #
+          padded_line="$split_line \\"
+          echo -E "$padded_line"
+        fi
+
+        # Now check if the current word on its own is wider than the terminal
+        # if so, emit it line by line.
+        while [[ $#word -gt $width ]]; do
+          padded_line="${word:0:$(($width))}"
+          echo -E "$padded_line"
+          word=${word:$((width))}
+        done
+
+        # Accuumulate the new/remaining word
+        split_line="$word"
+      fi
+    done
+
+    # Emit the last line.
+    padded_line="$split_line"
+    echo -E "$padded_line"
+
+  done
 }
 
 _history-substring-search-up-buffer() {

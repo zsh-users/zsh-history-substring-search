@@ -136,6 +136,19 @@ default values only after having loaded this script into your ZSH session.
   receive globally unique search results only once, then use this
   configuration variable, or use `setopt HIST_IGNORE_ALL_DUPS`.
 
+- `HISTORY_SUBSTRING_SEARCH_MENU` is a global variable that defines whether to
+  show a menu below the prompt when stepping through the search results. The
+  menu is show if this variable is set to a non-empty value. The default is to
+  display no menu.
+
+- `HISTORY_SUBSTRING_SEARCH_MENU_SELECTED` is a global variable that defines
+  how the currently selected menu item should be highlighted. The default is
+  to use `standout`, which on most terminals should mean reverse video. See
+  the "Character Highlighting" section in the zshzle(1) man page to learn
+  about the kinds of values you may assign to this variable.
+
+- `HISTORY_SUBSTRING_SEARCH_MENU_SIZE` is a global variables that defines the
+  maximum size of the history search result menu. The default is 16 items.
 
 History
 ------------------------------------------------------------------------------
