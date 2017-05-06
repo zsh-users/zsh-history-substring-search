@@ -117,6 +117,11 @@ default values only after having loaded this script into your ZSH session.
   Flags" section in the zshexpn(1) man page to learn about the kinds of
   values you may assign to this variable.
 
+* `HISTORY_SUBSTRING_SEARCH_FUZZY` is a global variable that defines
+  how the command history will be searched for your query. If set to a non-empty
+  value, causes this script to perform a fuzzy search by words, matching in
+  given order e.g. `ab c` will match `*ab*c*`
+
 * `HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE` is a global variable that defines
   whether all search results returned are _unique_. If set to a non-empty
   value, then only unique search results are presented. This behaviour is off
