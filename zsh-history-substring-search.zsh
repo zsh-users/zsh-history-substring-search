@@ -7,6 +7,7 @@
 # Copyright (c) 2011 Sorin Ionescu
 # Copyright (c) 2011 Vincent Guerci
 # Copyright (c) 2016 Geza Lore
+# Copyright (c) 2017 Bengt Brodersen
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -51,6 +52,7 @@ typeset -g _history_substring_search_refresh_display
 typeset -g _history_substring_search_query_highlight
 typeset -g _history_substring_search_result
 typeset -g _history_substring_search_query
+typeset -g -a _history_substring_search_query_parts
 typeset -g -A _history_substring_search_raw_matches
 typeset -g -i _history_substring_search_raw_match_index
 typeset -g -A _history_substring_search_matches
@@ -65,6 +67,7 @@ typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
 typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
+typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
 typeset -g _history_substring_search_{refresh_display,query_highlight,result,query,match_index,raw_match_index}
 typeset -ga _history_substring_search{,_raw}_matches
 
@@ -223,6 +226,7 @@ _history-substring-search-begin() {
     # speed things up a little.
     #
     _history_substring_search_query=
+    _history_substring_search_query_parts=()
     _history_substring_search_raw_matches=()
 
   else
@@ -233,20 +237,31 @@ _history-substring-search-begin() {
     _history_substring_search_query=$BUFFER
 
     #
-    # $BUFFER contains the text that is in the command-line currently.
-    # we put an extra "\\" before meta characters such as "\(" and "\)",
-    # so that they become "\\\(" and "\\\)".
+    # compose search pattern
     #
-    local escaped_query=${BUFFER//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
+    if [[ -n $HISTORY_SUBSTRING_SEARCH_FUZZY ]]; then
+      #
+      # `=` split string in arguments
+      #
+      _history_substring_search_query_parts=(${=_history_substring_search_query})
+    else
+      _history_substring_search_query_parts=(${_history_substring_search_query})
+    fi
 
     #
-    # Find all occurrences of the search query in the history file.
+    # Escape and join query parts with wildcard character '*' as seperator
+    # `(j:CHAR:)` join array to string with CHAR as seperator
+    #
+    local search_pattern="*${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
+
+    #
+    # Find all occurrences of the search pattern in the history file.
     #
     # (k) returns the "keys" (history index numbers) instead of the values
     # (R) returns values in reverse older, so the index of the youngest
     # matching history entry is at the head of the list.
     #
-    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)*${escaped_query}*]})
+    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${search_pattern}]})
   fi
 
   #
@@ -309,16 +324,20 @@ _history-substring-search-end() {
   _zsh_highlight
 
   # highlight the search query inside the command line
-  if [[ -n $_history_substring_search_query_highlight && -n $_history_substring_search_query ]]; then
-    #
-    # The following expression yields a variable $MBEGIN, which
-    # indicates the begin position + 1 of the first occurrence
-    # of _history_substring_search_query in $BUFFER.
-    #
-    : ${(S)BUFFER##(#m$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)($_history_substring_search_query##)}
-    local begin=$(( MBEGIN - 1 ))
-    local end=$(( begin + $#_history_substring_search_query ))
-    region_highlight+=("$begin $end $_history_substring_search_query_highlight")
+  if [[ -n $_history_substring_search_query_highlight ]]; then
+    # highlight first matching query parts
+    local highlight_start_index=0
+    local highlight_end_index=0
+    for query_part in $_history_substring_search_query_parts; do
+      local escaped_query_part=${query_part//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
+      # (i) get index of pattern
+      local query_part_match_index=${${BUFFER:$highlight_start_index}[(i)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${escaped_query_part}]}
+      if [[ $query_part_match_index -le ${#BUFFER:$highlight_start_index} ]]; then
+        highlight_start_index=$(( $highlight_start_index + $query_part_match_index ))
+        highlight_end_index=$(( $highlight_start_index + ${#query_part} ))
+        region_highlight+=("$(($highlight_start_index - 1)) $(($highlight_end_index - 1)) $_history_substring_search_query_highlight")
+      fi
+    done
   fi
 
   # For debugging purposes:
