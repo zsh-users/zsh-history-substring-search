@@ -17,6 +17,13 @@ Requirements
 
 * [ZSH](http://zsh.sourceforge.net) 4.3 or newer
 
+Install
+------------------------------------------------------------------------------
+
+Using the [Homebrew]( https://brew.sh ) package manager:
+
+    brew install zsh-history-substring-search
+    echo 'source /usr/local/opt/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
 
 Usage
 ------------------------------------------------------------------------------
