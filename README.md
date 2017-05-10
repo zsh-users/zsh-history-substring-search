@@ -19,11 +19,13 @@ Requirements
 
 Install
 ------------------------------------------------------------------------------
-### Git
-* git clone https://github.com/zsh-users/zsh-history-substring-search.git
 
 ### Brew
-* brew install zsh-history-substring-search
+`brew install zsh-history-substring-search`
+
+add following to `.zshrc`
+
+`source /usr/local/opt/zsh-history-substring-search/zsh-history-substring-search.zsh`
 
 Usage
 ------------------------------------------------------------------------------
