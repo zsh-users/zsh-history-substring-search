@@ -1,2 +1,2 @@
-# zsh word code files (zcompile)
-*.zwc
+# zsh word code files (zcompile and zrecompile)
+*.zwc*
