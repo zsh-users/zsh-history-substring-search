@@ -25,6 +25,20 @@ Using the [Homebrew]( https://brew.sh ) package manager:
     brew install zsh-history-substring-search
     echo 'source /usr/local/share/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
 
+Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
+
+1. Clone this repository in oh-my-zsh's plugins directory:
+
+        git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+
+2. Activate the plugin in `~/.zshrc`:
+
+        plugins=( [plugins...] zsh-history-substring-search)
+
+3. Source `~/.zshrc`  to take changes into account:
+
+        source ~/.zshrc
+
 Usage
 ------------------------------------------------------------------------------
 
