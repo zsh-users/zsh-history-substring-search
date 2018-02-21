@@ -33,7 +33,7 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
 2. Activate the plugin in `~/.zshrc`:
 
-        plugins=( [plugins...] zsh-history-substring-search)
+        plugins=( [plugins...] history-substring-search)
 
 3. Source `~/.zshrc`  to take changes into account:
 
