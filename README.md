@@ -135,6 +135,11 @@ default values only after having loaded this script into your ZSH session.
   how the command history will be searched for your query. If set to a non-empty
   value, causes this script to perform a fuzzy search by words, matching in
   given order e.g. `ab c` will match `*ab*c*`
+  
+* `HISTORY_SUBSTRING_SEARCH_FUZZY_AFTER_CURSOR` will allow fuzzy searching, if
+  enabled, to begin fuzzy matching after the cursor position and use literal
+  matching for the characters before the cursor position e.g if cursor comes 
+  after the `c` in `abc` will match `abc*` instead of `*abc*`
 
 * `HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE` is a global variable that defines
   whether all search results returned are _unique_. If set to a non-empty
