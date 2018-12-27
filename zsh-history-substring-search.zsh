@@ -239,7 +239,7 @@ _history-substring-search-begin() {
       #
       _history_substring_search_query_parts=(${=_history_substring_search_query})
     else
-      _history_substring_search_query_parts=(${_history_substring_search_query})
+      _history_substring_search_query_parts=(${==_history_substring_search_query})
     fi
 
     #
