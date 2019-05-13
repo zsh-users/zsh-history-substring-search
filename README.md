@@ -68,6 +68,11 @@ Usage
           bindkey '^[[A' history-substring-search-up
           bindkey '^[[B' history-substring-search-down
 
+      However, if the observed values don't work, you can try using terminfo:
+
+          bindkey "$terminfo[kcuu1]" history-substring-search-up
+          bindkey "$terminfo[kcud1]" history-substring-search-down
+
       You might also want to bind the Control-P/N keys for use in EMACS mode:
 
           bindkey -M emacs '^P' history-substring-search-up
