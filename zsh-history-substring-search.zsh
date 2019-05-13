@@ -321,6 +321,7 @@ _history-substring-search-end() {
     # highlight first matching query parts
     local highlight_start_index=0
     local highlight_end_index=0
+    local query_part
     for query_part in $_history_substring_search_query_parts; do
       local escaped_query_part=${query_part//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
       # (i) get index of pattern
