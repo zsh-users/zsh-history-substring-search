@@ -239,7 +239,7 @@ _history-substring-search-begin() {
       #
       _history_substring_search_query_parts=(${=_history_substring_search_query})
     else
-      _history_substring_search_query_parts=(${_history_substring_search_query})
+      _history_substring_search_query_parts=(${==_history_substring_search_query})
     fi
 
     #
@@ -324,7 +324,7 @@ _history-substring-search-end() {
     for query_part in $_history_substring_search_query_parts; do
       local escaped_query_part=${query_part//(#m)[\][()|\\*?#<>~^]/\\$MATCH}
       # (i) get index of pattern
-      local query_part_match_index=${${BUFFER:$highlight_start_index}[(i)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${escaped_query_part}]}
+      local query_part_match_index="${${BUFFER:$highlight_start_index}[(i)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${escaped_query_part}]}"
       if [[ $query_part_match_index -le ${#BUFFER:$highlight_start_index} ]]; then
         highlight_start_index=$(( $highlight_start_index + $query_part_match_index ))
         highlight_end_index=$(( $highlight_start_index + ${#query_part} ))
