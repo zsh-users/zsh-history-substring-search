@@ -48,6 +48,7 @@ typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
 typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
 typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
+typeset -g HISTORY_SUBSTRING_SEARCH_ANCHORED=''
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
