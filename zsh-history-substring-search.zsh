@@ -43,11 +43,11 @@
 # declare global configuration variables
 #-----------------------------------------------------------------------------
 
-typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
-typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
-typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
-typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
-typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
+typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND="${HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND:=bg=magenta,fg=white,bold}"
+typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND="${HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND:=bg=red,fg=white,bold}"
+typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS="${HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS:=i}"
+typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE="${HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS:=}"
+typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY="${HISTORY_SUBSTRING_SEARCH_FUZZY:=}"
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
