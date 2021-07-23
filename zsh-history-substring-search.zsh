@@ -247,11 +247,8 @@ _history-substring-search-begin() {
     # Escape and join query parts with wildcard character '*' as seperator
     # `(j:CHAR:)` join array to string with CHAR as seperator
     #
-    if [[ -n $HISTORY_SUBSTRING_SEARCH_PREFIX ]]; then
-        local search_pattern="${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
-    else
-        local search_pattern="*${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
-    fi
+    search_pattern="${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
+    test -z "$HISTORY_SUBSTRING_SEARCH_PREFIX" && search_pattern="*"$search_pattern
 
     #
     # Find all occurrences of the search pattern in the history file.
