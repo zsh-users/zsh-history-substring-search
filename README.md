@@ -141,6 +141,12 @@ default values only after having loaded this script into your ZSH session.
   value, causes this script to perform a fuzzy search by words, matching in
   given order e.g. `ab c` will match `*ab*c*`
 
+* `HISTORY_SUBSTRING_SEARCH_PREFIX` is a global variable that defines
+  how the command history will be searched for your query. If set to a non-empty
+  value, only history prefixed by your query will be matched. For example,
+  if this variable is empty, `ls` will match `ls -l` and `echo ls`; if it is
+  non-empty, `ls` will only match `ls -l`.
+
 * `HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE` is a global variable that defines
   whether all search results returned are _unique_. If set to a non-empty
   value, then only unique search results are presented. This behaviour is off
