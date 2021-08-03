@@ -42,72 +42,77 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 Usage
 ------------------------------------------------------------------------------
 
-1.  Load this script into your interactive ZSH session:
+1.  Define the keys to be bind to the `history-substring-search-up` and
+    `history-substring-search-down` functions from this script. This can be
+    done using the variables shown below.
 
-        % source zsh-history-substring-search.zsh
+    Users typically bind their UP and DOWN arrow keys to these functions,
+    thus:
+    * Run `cat -v` in your favorite terminal emulator to observe key codes.
+      (**NOTE:** In some cases, `cat -v` shows the wrong key codes.  If the
+      key codes shown by `cat -v` don't work for you, press `<CONTROL-v><UP>`
+      and `<CONTROL-v><DOWN>` at your ZSH command line prompt for correct key
+      codes.)
+    * Press the UP arrow key and observe what is printed in your terminal.
+    * Press the DOWN arrow key and observe what is printed in your terminal.
+    * Press the CONTROL and C keys simultaneously to terminate the `cat -v`.
+    * Use your observations from the previous steps to create key bindings.
+      For example, if you observed `^[[A` for UP and `^[[B` for DOWN, then:
+
+          HISTORY_SUBSTRING_SEARCH_UP_MAIN_KEYS=('^[[A')
+          HISTORY_SUBSTRING_SEARCH_DOWN_MAIN_KEYS=('^[[B')
+
+      However, if the observed values don't work, you can try using terminfo:
+
+          HISTORY_SUBSTRING_SEARCH_UP_MAIN_KEYS=($terminfo[kcuu1])
+          HISTORY_SUBSTRING_SEARCH_DOWN_MAIN_KEYS=($terminfo[kcud1])
+
+      You might also want to bind the CONTROL-P and CONTROL-N keys for use in
+      EMACS mode:
+
+          HISTORY_SUBSTRING_SEARCH_UP_EMACS_KEYS=('^P')
+          HISTORY_SUBSTRING_SEARCH_DOWN_EMACS_KEYS=('^N')
+
+      You might also want to bind the `k` and `j` keys for use in VI mode:
+
+          HISTORY_SUBSTRING_SEARCH_UP_VICMD_KEYS=('k')
+          HISTORY_SUBSTRING_SEARCH_DOWN_VICMD_KEYS=('j')
+
+2.  Load this script into your interactive ZSH session:
+
+        source zsh-history-substring-search.zsh
 
     If you want to use [zsh-syntax-highlighting][6] along with this script,
     then make sure that you load it *before* you load this script:
 
-        % source zsh-syntax-highlighting.zsh
-        % source zsh-history-substring-search.zsh
-
-2.  Bind keyboard shortcuts to this script's functions.
-
-    Users typically bind their UP and DOWN arrow keys to this script, thus:
-    * Run `cat -v` in your favorite terminal emulator to observe key codes.
-      (**NOTE:** In some cases, `cat -v` shows the wrong key codes.  If the
-      key codes shown by `cat -v` don't work for you, press `<C-v><UP>` and
-      `<C-v><DOWN>` at your ZSH command line prompt for correct key codes.)
-    * Press the UP arrow key and observe what is printed in your terminal.
-    * Press the DOWN arrow key and observe what is printed in your terminal.
-    * Press the Control and C keys simultaneously to terminate the `cat -v`.
-    * Use your observations from the previous steps to create key bindings.
-      For example, if you observed `^[[A` for UP and `^[[B` for DOWN, then:
-
-          bindkey '^[[A' history-substring-search-up
-          bindkey '^[[B' history-substring-search-down
-
-      However, if the observed values don't work, you can try using terminfo:
-
-          bindkey "$terminfo[kcuu1]" history-substring-search-up
-          bindkey "$terminfo[kcud1]" history-substring-search-down
-
-      You might also want to bind the Control-P/N keys for use in EMACS mode:
-
-          bindkey -M emacs '^P' history-substring-search-up
-          bindkey -M emacs '^N' history-substring-search-down
-
-      You might also want to bind the `k` and `j` keys for use in VI mode:
-
-          bindkey -M vicmd 'k' history-substring-search-up
-          bindkey -M vicmd 'j' history-substring-search-down
+        source zsh-syntax-highlighting.zsh
+        source zsh-history-substring-search.zsh
 
 3.  Type any part of any previous command and then:
 
     * Press the `history-substring-search-up` key, which was configured in
-      step 2 above, to select the nearest command that (1) contains your query
+      step 1 above, to select the nearest command that (1) contains your query
       and (2) is also older than the current command in your command history.
 
     * Press the `history-substring-search-down` key, which was configured in
-      step 2 above, to select the nearest command that (1) contains your query
+      step 1 above, to select the nearest command that (1) contains your query
       and (2) is also newer than the current command in your command history.
 
-    * Press `^U` the Control and U keys simultaneously to abort the search.
+    * Press the CONTROL and U keys simultaneously to abort the search.
 
 4.  If a matching command spans more than one line of text, press the LEFT
     arrow key to move the cursor away from the end of the command, and then:
 
     * Press the `history-substring-search-up` key, which was configured in
-      step 2 above, to move the cursor to the line above the cursored line.
+      step 1 above, to move the cursor to the line above the cursored line.
       When the cursor reaches the first line of the command, pressing the
       `history-substring-search-up` key again will cause this script to
       perform another search.
 
     * Press the `history-substring-search-down` key, which was configured in
-      step 2 above, to move the cursor to the line below the cursored line.
+      step 1 above, to move the cursor to the line below the cursored line.
       When the cursor reaches the last line of the command, pressing the
-      `history-substring-search-down` key, which was configured in step 2
+      `history-substring-search-down` key, which was configured in step 1
       above, again will cause this script to perform another search.
 
 
@@ -161,6 +166,27 @@ default values.
   receive globally unique search results only once, then use this
   configuration variable, or use `setopt HIST_IGNORE_ALL_DUPS`.
 
+The following variables can be set before having loaded this script into your
+ZSH session to define the `history-substring-search-up` and
+`history-substring-search-down` key bindings.
+
+* `HISTORY_SUBSTRING_SEARCH_UP_MAIN_KEYS` is a global array that defines the
+  main keymap keys to be bind to the `history-substring-search-up` function.
+
+* `HISTORY_SUBSTRING_SEARCH_DOWN_MAIN_KEYS` is a global array that defines the
+  main keymap keys to be bind to the `history-substring-search-down` function.
+
+* `HISTORY_SUBSTRING_SEARCH_UP_EMACS_KEYS` is a global array that defines the
+  EMACS mode keys to be bind to the `history-substring-search-up` function.
+
+* `HISTORY_SUBSTRING_SEARCH_DOWN_EMACS_KEYS` is a global array that defines the
+  EMACS mode keys to be bind to the `history-substring-search-down` function.
+
+* `HISTORY_SUBSTRING_SEARCH_UP_VICMD_KEYS` is a global array that defines the
+  VI mode keys to be bind to the `history-substring-search-up` function.
+
+* `HISTORY_SUBSTRING_SEARCH_DOWN_VICMD_KEYS` is a global array that defines the
+  VI mode keys to be bind to the `history-substring-search-down` function.
 
 History
 ------------------------------------------------------------------------------

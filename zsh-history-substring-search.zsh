@@ -43,12 +43,24 @@
 # declare global configuration variables
 #-----------------------------------------------------------------------------
 
-: ${HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'}
-: ${HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'}
-: ${HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'}
-: ${HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''}
-: ${HISTORY_SUBSTRING_SEARCH_FUZZY=''}
-: ${HISTORY_SUBSTRING_SEARCH_PREFIXED=''}
+if (( ! $+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
+fi
+if (( ! $+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
+fi
+if (( ! $+HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'
+fi
+if (( ! $+HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''
+fi
+if (( ! $+HISTORY_SUBSTRING_SEARCH_FUZZY )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_FUZZY=''
+fi
+if (( ! $+HISTORY_SUBSTRING_SEARCH_PREFIXED )); then
+  typeset -g HISTORY_SUBSTRING_SEARCH_PREFIXED=''
+fi
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
@@ -762,6 +774,31 @@ _history-substring-search-down-search() {
     _history-substring-search-down-search
   fi
 }
+
+#-----------------------------------------------------------------------------
+# Set key bindings
+#-----------------------------------------------------------------------------
+
+local _history_substring_search_key
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_UP_MAIN_KEYS; do
+  bindkey $_history_substring_search_key history-substring-search-up
+done
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_DOWN_MAIN_KEYS; do
+  bindkey $_history_substring_search_key history-substring-search-down
+done
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_UP_EMACS_KEYS; do
+  bindkey -M emacs $_history_substring_search_key history-substring-search-up
+done
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_DOWN_EMACS_KEYS; do
+  bindkey -M emacs $_history_substring_search_key history-substring-search-down
+done
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_UP_VICMD_KEYS; do
+  bindkey -M vicmd $_history_substring_search_key history-substring-search-up
+done
+for _history_substring_search_key in $HISTORY_SUBSTRING_SEARCH_DOWN_VICMD_KEYS; do
+  bindkey -M vicmd $_history_substring_search_key history-substring-search-down
+done
+unset _history_substring_search_key
 
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
