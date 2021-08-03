@@ -115,7 +115,7 @@ Configuration
 ------------------------------------------------------------------------------
 
 This script defines the following global variables. You may override their
-default values only after having loaded this script into your ZSH session.
+default values.
 
 * `HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND` is a global variable that defines
   how the query should be highlighted inside a matching command. Its default
