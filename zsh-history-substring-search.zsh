@@ -48,7 +48,7 @@
 : ${HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'}
 : ${HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''}
 : ${HISTORY_SUBSTRING_SEARCH_FUZZY=''}
-: ${HISTORY_SUBSTRING_SEARCH_PREFIX=''}
+: ${HISTORY_SUBSTRING_SEARCH_PREFIXED=''}
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
@@ -248,7 +248,13 @@ _history-substring-search-begin() {
     # `(j:CHAR:)` join array to string with CHAR as seperator
     #
     local search_pattern="${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
-    test -z "$HISTORY_SUBSTRING_SEARCH_PREFIX" && search_pattern="*$search_pattern"
+
+    #
+    # Support anchoring history search to the beginning of the command
+    #
+    if [[ -z $HISTORY_SUBSTRING_SEARCH_PREFIXED ]]; then
+      search_pattern="*${search_pattern}"
+    fi
 
     #
     # Find all occurrences of the search pattern in the history file.
