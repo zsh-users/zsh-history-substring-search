@@ -56,7 +56,7 @@ Usage
 
     Users typically bind their UP and DOWN arrow keys to this script, thus:
     * Run `cat -v` in your favorite terminal emulator to observe key codes.
-      (**NOTE:** In some cases, `cat -v` shows the wrong key codes.  If the
+      (**NOTE:** In some cases, `cat -v` shows the wrong key codes.  If the
       key codes shown by `cat -v` don't work for you, press `<C-v><UP>` and
       `<C-v><DOWN>` at your ZSH command line prompt for correct key codes.)
     * Press the UP arrow key and observe what is printed in your terminal.
