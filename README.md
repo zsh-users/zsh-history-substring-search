@@ -65,8 +65,8 @@ Usage
     * Use your observations from the previous steps to create key bindings.
       For example, if you observed `^[[A` for UP and `^[[B` for DOWN, then:
 
-          bindkey '^[[A' history-substring-search-up
-          bindkey '^[[B' history-substring-search-down
+          bindkey "^[[A" history-substring-search-up
+          bindkey "^[[B" history-substring-search-down
 
       However, if the observed values don't work, you can try using terminfo:
 
