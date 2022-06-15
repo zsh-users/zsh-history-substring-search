@@ -25,6 +25,14 @@ Using the [Homebrew]( https://brew.sh ) package manager:
     brew install zsh-history-substring-search
     echo 'source /usr/local/share/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
 
+Using [Fig](https://fig.io):
+
+Fig adds apps, shortcuts, and autocomplete to your existing terminal.
+
+Install `Powerlevel10k` in just one click.
+
+<a href="https://fig.io/plugins/other/powerlevel10k" target="_blank"><img src="https://fig.io/badges/install-with-fig.svg" /></a>
+
 Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
 1. Clone this repository in oh-my-zsh's plugins directory:
