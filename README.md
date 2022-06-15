@@ -29,7 +29,7 @@ Using [Fig](https://fig.io):
 
 Fig adds apps, shortcuts, and autocomplete to your existing terminal.
 
-Install `zsh-history-substring-searc` in just one click.
+Install `zsh-history-substring-search` in just one click.
 
 <a href="https://fig.io/plugins/other/zsh-history-substring-search" target="_blank"><img src="https://fig.io/badges/install-with-fig.svg" /></a>
 
