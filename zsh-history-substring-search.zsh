@@ -106,6 +106,8 @@ zmodload -F zsh/parameter
 # https://github.com/nicoulaj/zsh-syntax-highlighting
 #
 if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
+  autoload -U is-at-least
+
   #
   # Dummy implementation of _zsh_highlight() that
   # simply removes any existing highlights when the
@@ -118,53 +120,125 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   }
 
   #
-  # The following snippet was taken from the zsh-syntax-highlighting project:
-  # https://github.com/zsh-users/zsh-syntax-highlighting/blob/56b134f5d62ae3d4e66c7f52bd0cc2595f9b305b/zsh-syntax-highlighting.zsh#L126-161
+  # Check if $1 denotes the name of a callable function, i.e. it is fully
+  # defined or it is marked for autoloading and autoloading it at the first
+  # call to it will succeed. In particular, if $1 has been marked for
+  # autoloading but is not available in $fpath, then it will return 1 (false).
   #
-  # SPDX-SnippetBegin
-  # SPDX-License-Identifier: BSD-3-Clause
-  # SPDX-SnippetCopyrightText: 2010-2011 zsh-syntax-highlighting contributors
-  #--------------8<-------------------8<-------------------8<-----------------
-  # Rebind all ZLE widgets to make them invoke _zsh_highlights.
-  _zsh_highlight_bind_widgets()
-  {
-    # Load ZSH module zsh/zleparameter, needed to override user defined widgets.
-    zmodload zsh/zleparameter 2>/dev/null || {
-      echo 'zsh-syntax-highlighting: failed loading zsh/zleparameter.' >&2
-      return 1
+  # This is based on the zsh-syntax-highlighting plugin.
+  #
+  _history-substring-search-function-callable() {
+    if (( ${+functions[$1]} )) && ! [[ "$functions[$1]" == *"builtin autoload -X"* ]]; then
+      return 0 # already fully loaded
+    else
+      # "$1" is either an autoload stub, or not a function at all.
+      # We expect 'autoload +X' to return non-zero if it fails to fully load
+      # the function.
+      ( autoload -U +X -- "$1" 2>/dev/null )
+      return $?
+    fi
+  }
+
+  #
+  # The zsh-syntax-highlighting plugin uses zle-line-pre-redraw hook instead
+  # of the legacy "bind all widgets" if 1) zsh has the memo= feature (added in
+  # version 5.9) and 2) add-zle-hook-widget is available.
+  #
+  if is-at-least 5.9 $ZSH_VERSION && _history-substring-search-function-callable add-zle-hook-widget; then
+    #
+    # The following code is based on the zsh-syntax-highlighting plugin.
+    #
+    autoload -U add-zle-hook-widget
+
+    _history-substring-search-zle-line-finish() {
+      #
+      # Reset $WIDGET since the 'main' highlighter depends on it.
+      #
+      # Since $WIDGET is declared by zle as read-only in this function's scope,
+      # a nested function is required in order to shadow its built-in value;
+      # see "User-defined widgets" in zshall.
+      #
+      () {
+        local -h -r WIDGET=zle-line-finish
+        _zsh_highlight
+      }
     }
 
-    # Override ZLE widgets to make them invoke _zsh_highlight.
-    local cur_widget
-    for cur_widget in ${${(f)"$(builtin zle -la)"}:#(.*|_*|orig-*|run-help|which-command|beep|yank*)}; do
-      case $widgets[$cur_widget] in
+    _history-substring-search-zle-line-pre-redraw() {
+      #
+      # If the zsh-syntax-highlighting plugin has been loaded (after our plugin
+      # plugin, otherwise this hook wouldn't be called), remove our hooks.
+      #
+      if [[ $+ZSH_HIGHLIGHT_VERSION -eq 1 ]]; then
+        autoload -U add-zle-hook-widget
+        add-zle-hook-widget -d zle-line-pre-redraw _history-substring-search-zle-line-pre-redraw
+        add-zle-hook-widget -d zle-line-finish _history-substring-search-zle-line-finish
+        return 0
+      fi
+      #
+      # Set $? to 0 for _zsh_highlight.  Without this, subsequent
+      # zle-line-pre-redraw hooks won't run, since add-zle-hook-widget happens to
+      # call us with $? == 1 in the common case.
+      #
+      true && _zsh_highlight "$@"
+    }
 
-        # Already rebound event: do nothing.
-        user:$cur_widget|user:_zsh_highlight_widget_*);;
+    if [[ -o zle ]]; then
+      add-zle-hook-widget zle-line-pre-redraw _history-substring-search-zle-line-pre-redraw
+      add-zle-hook-widget zle-line-finish _history-substring-search-zle-line-finish
+    fi
+  else
+    #
+    # The following snippet was taken from the zsh-syntax-highlighting project:
+    # https://github.com/zsh-users/zsh-syntax-highlighting/blob/56b134f5d62ae3d4e66c7f52bd0cc2595f9b305b/zsh-syntax-highlighting.zsh#L126-161
+    #
+    # SPDX-SnippetBegin
+    # SPDX-License-Identifier: BSD-3-Clause
+    # SPDX-SnippetCopyrightText: 2010-2011 zsh-syntax-highlighting contributors
+    #--------------8<-------------------8<-------------------8<-----------------
+    # Rebind all ZLE widgets to make them invoke _zsh_highlights.
+    _zsh_highlight_bind_widgets()
+    {
+      # Load ZSH module zsh/zleparameter, needed to override user defined widgets.
+      zmodload zsh/zleparameter 2>/dev/null || {
+        echo 'zsh-syntax-highlighting: failed loading zsh/zleparameter.' >&2
+        return 1
+      }
 
-        # User defined widget: override and rebind old one with prefix "orig-".
-        user:*) eval "zle -N orig-$cur_widget ${widgets[$cur_widget]#*:}; \
-                      _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
-                      zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+      # Override ZLE widgets to make them invoke _zsh_highlight.
+      local cur_widget
+      for cur_widget in ${${(f)"$(builtin zle -la)"}:#(.*|_*|orig-*|run-help|which-command|beep|yank*)}; do
+        case $widgets[$cur_widget] in
 
-        # Completion widget: override and rebind old one with prefix "orig-".
-        completion:*) eval "zle -C orig-$cur_widget ${${widgets[$cur_widget]#*:}/:/ }; \
-                            _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
-                            zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+          # Already rebound event: do nothing.
+          user:$cur_widget|user:_zsh_highlight_widget_*);;
 
-        # Builtin widget: override and make it call the builtin ".widget".
-        builtin) eval "_zsh_highlight_widget_$cur_widget() { builtin zle .$cur_widget -- \"\$@\" && _zsh_highlight }; \
-                       zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+          # User defined widget: override and rebind old one with prefix "orig-".
+          user:*) eval "zle -N orig-$cur_widget ${widgets[$cur_widget]#*:}; \
+                        _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                        zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
 
-        # Default: unhandled case.
-        *) echo "zsh-syntax-highlighting: unhandled ZLE widget '$cur_widget'" >&2 ;;
-      esac
-    done
-  }
-  #-------------->8------------------->8------------------->8-----------------
-  # SPDX-SnippetEnd
+          # Completion widget: override and rebind old one with prefix "orig-".
+          completion:*) eval "zle -C orig-$cur_widget ${${widgets[$cur_widget]#*:}/:/ }; \
+                              _zsh_highlight_widget_$cur_widget() { builtin zle orig-$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                              zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
 
-  _zsh_highlight_bind_widgets
+          # Builtin widget: override and make it call the builtin ".widget".
+          builtin) eval "_zsh_highlight_widget_$cur_widget() { builtin zle .$cur_widget -- \"\$@\" && _zsh_highlight }; \
+                         zle -N $cur_widget _zsh_highlight_widget_$cur_widget";;
+
+          # Default: unhandled case.
+          *) echo "zsh-syntax-highlighting: unhandled ZLE widget '$cur_widget'" >&2 ;;
+        esac
+      done
+    }
+    #-------------->8------------------->8------------------->8-----------------
+    # SPDX-SnippetEnd
+
+    _zsh_highlight_bind_widgets
+  fi
+
+  unfunction _history-substring-search-function-callable
 fi
 
 _history-substring-search-begin() {
