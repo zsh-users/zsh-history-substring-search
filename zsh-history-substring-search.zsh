@@ -65,6 +65,7 @@ typeset -g -i _history_substring_search_raw_match_index
 typeset -g -a _history_substring_search_matches
 typeset -g -i _history_substring_search_match_index
 typeset -g -A _history_substring_search_unique_filter
+typeset -g -i _history_substring_search_zsh_5_9
 
 #-----------------------------------------------------------------------------
 # the main ZLE widgets
@@ -98,6 +99,11 @@ zle -N history-substring-search-down
 #-----------------------------------------------------------------------------
 
 zmodload -F zsh/parameter
+autoload -Uz is-at-least
+
+if is-at-least 5.9 $ZSH_VERSION; then
+  _history_substring_search_zsh_5_9=1
+fi
 
 #
 # We have to "override" some keys and widgets if the
@@ -106,8 +112,6 @@ zmodload -F zsh/parameter
 # https://github.com/nicoulaj/zsh-syntax-highlighting
 #
 if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
-  autoload -U is-at-least
-
   #
   # Dummy implementation of _zsh_highlight() that
   # simply removes any existing highlights when the
@@ -144,7 +148,7 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   # of the legacy "bind all widgets" if 1) zsh has the memo= feature (added in
   # version 5.9) and 2) add-zle-hook-widget is available.
   #
-  if is-at-least 5.9 $ZSH_VERSION && _history-substring-search-function-callable add-zle-hook-widget; then
+  if [[ $_history_substring_search_zsh_5_9 -eq 1 ]] && _history-substring-search-function-callable add-zle-hook-widget; then
     #
     # The following code is based on the zsh-syntax-highlighting plugin.
     #
@@ -359,12 +363,21 @@ _history-substring-search-begin() {
 _history-substring-search-end() {
   setopt localoptions extendedglob
 
+  local highlight_memo=
   _history_substring_search_result=$BUFFER
+
+  if [[ $_history_substring_search_zsh_5_9 -eq 1 ]]; then
+    highlight_memo='memo=history-substring-search'
+  fi
 
   # the search was successful so display the result properly by clearing away
   # existing highlights and moving the cursor to the end of the result buffer
   if [[ $_history_substring_search_refresh_display -eq 1 ]]; then
-    region_highlight=()
+    if [[ -n $highlight_memo ]]; then
+      region_highlight=( "${(@)region_highlight:#*${highlight_memo}*}" )
+    else
+      region_highlight=()
+    fi
     CURSOR=${#BUFFER}
   fi
 
@@ -384,7 +397,9 @@ _history-substring-search-end() {
       if [[ $query_part_match_index -le ${#BUFFER:$highlight_start_index} ]]; then
         highlight_start_index=$(( $highlight_start_index + $query_part_match_index ))
         highlight_end_index=$(( $highlight_start_index + ${#query_part} ))
-        region_highlight+=("$(($highlight_start_index - 1)) $(($highlight_end_index - 1)) $_history_substring_search_query_highlight")
+        region_highlight+=(
+          "$(($highlight_start_index - 1)) $(($highlight_end_index - 1)) ${_history_substring_search_query_highlight}${highlight_memo:+,$highlight_memo}"
+        )
       fi
     done
   fi
