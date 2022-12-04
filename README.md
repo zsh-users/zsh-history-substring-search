@@ -23,7 +23,7 @@ Install
 Using the [Homebrew]( https://brew.sh ) package manager:
 
     brew install zsh-history-substring-search
-    echo 'source /usr/local/share/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
+    echo 'source $(brew --prefix)/share/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
 
 Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
