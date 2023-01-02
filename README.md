@@ -35,9 +35,9 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
         plugins=( [plugins...] zsh-history-substring-search)
 
-3. Source `~/.zshrc`  to take changes into account:
+3. Run `exec zsh`  to take changes into account:
 
-        source ~/.zshrc
+        exec zsh
 
 Usage
 ------------------------------------------------------------------------------
