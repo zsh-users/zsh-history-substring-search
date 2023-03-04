@@ -39,6 +39,30 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
         exec zsh
 
+Using [zplug](https://github.com/zplug/zplug):
+
+1. Add this repo to `~/.zshrc`:
+
+        zplug "zsh-users/zsh-history-substring-search", as: plugin
+
+Using [antigen](https://github.com/zsh-users/antigen):
+
+1. Add the `antigen bundle` command just before `antigen apply`, like this:
+
+``` 
+antigen bundle zsh-users/zsh-history-substring-search
+antigen apply
+```
+ 
+2. Then, **after** `antigen apply`, add the key binding configurations, like this:
+ 
+```
+# zsh-history-substring-search configuration
+bindkey '^[[A' history-substring-search-up # or '\eOA'
+bindkey '^[[B' history-substring-search-down # or '\eOB'
+HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
+```
+
 Usage
 ------------------------------------------------------------------------------
 
@@ -72,6 +96,8 @@ Usage
 
           bindkey "$terminfo[kcuu1]" history-substring-search-up
           bindkey "$terminfo[kcud1]" history-substring-search-down
+
+      Users have also observed that `[OA` and `[OB` are correct values, _even if_ these were not the observed values.
 
       You might also want to bind the Control-P/N keys for use in EMACS mode:
 
