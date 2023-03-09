@@ -97,7 +97,9 @@ Usage
           bindkey "$terminfo[kcuu1]" history-substring-search-up
           bindkey "$terminfo[kcud1]" history-substring-search-down
 
-      Users have also observed that `[OA` and `[OB` are correct values, _even if_ these were not the observed values.
+      Users have also observed that `[OA` and `[OB` are correct values, 
+      _even if_ these were not the observed values. If you are having trouble
+      with the observed values, give these a try.
 
       You might also want to bind the Control-P/N keys for use in EMACS mode:
 
