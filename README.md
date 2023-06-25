@@ -43,14 +43,12 @@ Using [Zinit](https://github.com/zdharma-continuum/zinit):
 
 1. Use the `Oh-my-zsh` Zinit snippet in `~/.zshrc`:
         
-        `zinit snippet OMZ::plugins/git/git.plugin.zsh`
+        zinit snippet OMZ::plugins/git/git.plugin.zsh`
 
 2. Load the plugin in `~/.zshrc`:
 
-        ```
-zinit load 'zsh-users/zsh-history-substring-search'
-zinit ice wait atload'_history_substring_search_config'
-```
+        zinit load 'zsh-users/zsh-history-substring-search
+        zinit ice wait atload'_history_substring_search_config'
 
 3. Source ``~/.zshrc`:
 
