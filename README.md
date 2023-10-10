@@ -161,6 +161,9 @@ default values.
   receive globally unique search results only once, then use this
   configuration variable, or use `setopt HIST_IGNORE_ALL_DUPS`.
 
+* `HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_TIMEOUT` is a global variable that
+  defines a timeout in seconds for clearing the search highlight.
+
 
 History
 ------------------------------------------------------------------------------
