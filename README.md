@@ -91,13 +91,13 @@ Usage
 
 1.  Load this script into your interactive ZSH session:
 
-        % source zsh-history-substring-search.zsh
+        source zsh-history-substring-search.zsh
 
     If you want to use [zsh-syntax-highlighting][6] along with this script,
     then make sure that you load it *before* you load this script:
 
-        % source zsh-syntax-highlighting.zsh
-        % source zsh-history-substring-search.zsh
+        source zsh-syntax-highlighting.zsh
+        source zsh-history-substring-search.zsh
 
 2.  Bind keyboard shortcuts to this script's functions.
 
