@@ -25,6 +25,14 @@ Using the [Homebrew]( https://brew.sh ) package manager:
     brew install zsh-history-substring-search
     echo 'source $(brew --prefix)/share/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
 
+Using [Fig](https://fig.io):
+
+Fig adds apps, shortcuts, and autocomplete to your existing terminal.
+
+Install `zsh-history-substring-search` in just one click.
+
+<a href="https://fig.io/plugins/other/zsh-history-substring-search" target="_blank"><img src="https://fig.io/badges/install-with-fig.svg" /></a>
+
 Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
 1. Clone this repository in oh-my-zsh's plugins directory:
@@ -63,18 +71,33 @@ bindkey '^[[B' history-substring-search-down # or '\eOB'
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 ```
 
+Using [Zinit](https://github.com/zdharma-continuum/zinit):
+
+1. Use the `Oh-my-zsh` Zinit snippet in `~/.zshrc`:
+
+        zinit snippet OMZ::plugins/git/git.plugin.zsh`
+
+2. Load the plugin in `~/.zshrc`:
+
+        zinit load 'zsh-users/zsh-history-substring-search
+        zinit ice wait atload'_history_substring_search_config'
+
+3. Run `exec zsh` to take changes into account:
+
+        exec zsh
+
 Usage
 ------------------------------------------------------------------------------
 
 1.  Load this script into your interactive ZSH session:
 
-        % source zsh-history-substring-search.zsh
+        source zsh-history-substring-search.zsh
 
     If you want to use [zsh-syntax-highlighting][6] along with this script,
     then make sure that you load it *before* you load this script:
 
-        % source zsh-syntax-highlighting.zsh
-        % source zsh-history-substring-search.zsh
+        source zsh-syntax-highlighting.zsh
+        source zsh-history-substring-search.zsh
 
 2.  Bind keyboard shortcuts to this script's functions.
 
