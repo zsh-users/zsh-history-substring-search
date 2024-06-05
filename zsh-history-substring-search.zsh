@@ -553,10 +553,8 @@ _history_substring_search_process_raw_matches() {
     #
     # If HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE is set to a non-empty value,
     # then ensure that only unique matches are presented to the user.
-    # When HIST_IGNORE_ALL_DUPS is set, ZSH already ensures a unique history,
-    # so in this case we do not need to do anything.
     #
-    if [[ ! -o HIST_IGNORE_ALL_DUPS && -n $HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE ]]; then
+    if [[ -n $HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE ]]; then
       #
       # Get the actual history entry at the new index, and check if we have
       # already added it to _history_substring_search_matches.
