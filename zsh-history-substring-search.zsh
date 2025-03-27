@@ -49,6 +49,7 @@
 : ${HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=''}
 : ${HISTORY_SUBSTRING_SEARCH_FUZZY=''}
 : ${HISTORY_SUBSTRING_SEARCH_PREFIXED=''}
+: ${HISTORY_SUBSTRING_SEARCH_MATCH_FUNCTION=''}
 
 #-----------------------------------------------------------------------------
 # declare internal global variables
@@ -245,6 +246,30 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   unfunction _history-substring-search-function-callable
 fi
 
+_history-substring-get-raw-matches() {
+  #
+  # Escape and join query parts with wildcard character '*' as separator
+  # `(j:CHAR:)` join array to string with CHAR as separator
+  #
+  local search_pattern="${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
+
+  #
+  # Support anchoring history search to the beginning of the command
+  #
+  if [[ -z $HISTORY_SUBSTRING_SEARCH_PREFIXED ]]; then
+    search_pattern="*${search_pattern}"
+  fi
+
+  #
+  # Find all occurrences of the search pattern in the history file.
+  #
+  # (k) returns the "keys" (history index numbers) instead of the values
+  # (R) returns values in reverse older, so the index of the youngest
+  # matching history entry is at the head of the list.
+  #
+  _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${search_pattern}]})
+}
+
 _history-substring-search-begin() {
   setopt localoptions extendedglob
 
@@ -294,27 +319,7 @@ _history-substring-search-begin() {
       _history_substring_search_query_parts=(${==_history_substring_search_query})
     fi
 
-    #
-    # Escape and join query parts with wildcard character '*' as seperator
-    # `(j:CHAR:)` join array to string with CHAR as seperator
-    #
-    local search_pattern="${(j:*:)_history_substring_search_query_parts[@]//(#m)[\][()|\\*?#<>~^]/\\$MATCH}*"
-
-    #
-    # Support anchoring history search to the beginning of the command
-    #
-    if [[ -z $HISTORY_SUBSTRING_SEARCH_PREFIXED ]]; then
-      search_pattern="*${search_pattern}"
-    fi
-
-    #
-    # Find all occurrences of the search pattern in the history file.
-    #
-    # (k) returns the "keys" (history index numbers) instead of the values
-    # (R) returns values in reverse older, so the index of the youngest
-    # matching history entry is at the head of the list.
-    #
-    _history_substring_search_raw_matches=(${(k)history[(R)(#$HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS)${search_pattern}]})
+    ${HISTORY_SUBSTRING_SEARCH_MATCH_FUNCTION:-_history-substring-get-raw-matches}
   fi
 
   #
@@ -655,7 +660,13 @@ _history-substring-search-found() {
   # 2. Use $HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
   #    to highlight the current buffer.
   #
-  BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
+  if [[ -n $HISTORY_SUBSTRING_SEARCH_MATCH_FUNCTION ]]; then
+    # Custom provider functions provide entries directly
+    BUFFER=$_history_substring_search_matches[$_history_substring_search_match_index]
+  else
+    # Builtin search provides the index to matching history entries
+    BUFFER=$history[$_history_substring_search_matches[$_history_substring_search_match_index]]
+  fi
   _history_substring_search_query_highlight=$HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
 }
 
