@@ -499,6 +499,11 @@ _history-substring-search-up-history() {
       BUFFER=
 
     # going up from somewhere below the top of history
+    # the cursor is at the end of a multiline prompt, go up in history.
+    elif [[ $CURSOR -eq $#BUFFER ]] then
+      zle up-history
+
+    # Otherwise, keep the default behavior of up arrow.
     else
       zle up-line-or-history
     fi
