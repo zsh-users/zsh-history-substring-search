@@ -51,7 +51,7 @@ Using [zplug](https://github.com/zplug/zplug):
 
 1. Add this repo to `~/.zshrc`:
 
-        zplug "zsh-users/zsh-history-substring-search", as: plugin
+        zplug "zsh-users/zsh-history-substring-search", as:plugin
 
 Using [antigen](https://github.com/zsh-users/antigen):
 
