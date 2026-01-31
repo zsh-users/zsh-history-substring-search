@@ -75,7 +75,7 @@ Using [Zinit](https://github.com/zdharma-continuum/zinit):
 
 1. Use the `Oh-my-zsh` Zinit snippet in `~/.zshrc`:
 
-        zinit snippet OMZ::plugins/git/git.plugin.zsh`
+        zinit snippet OMZ::plugins/git/git.plugin.zsh
 
 2. Load the plugin in `~/.zshrc`:
 
