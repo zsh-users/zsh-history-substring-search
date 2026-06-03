@@ -117,11 +117,24 @@ if [[ $+functions[_zsh_highlight] -eq 0 ]]; then
   # simply removes any existing highlights when the
   # user inserts printable characters into $BUFFER.
   #
-  _zsh_highlight() {
-    if [[ $KEYS == [[:print:]] ]]; then
-      region_highlight=()
-    fi
-  }
+  if [[ -n $_history_substring_search_zsh_5_9 ]]; then
+      # On zsh 5.9+, region_highlight entries are tagged with
+      # memo=history-substring-search and cleaned up selectively in
+      # _history-substring-search-end. A no-op fallback is sufficient
+      # and avoids wiping highlights set by other plugins (e.g.
+      # zsh-autosuggestions).
+      _zsh_highlight() { : }
+  else
+      # On older zsh, there is no memo= support so we cannot selectively
+      # remove our highlights. Fall back to clearing all of region_highlight
+      # on printable keystrokes to prevent stale search highlights from
+      # lingering after a substring search ends.
+      _zsh_highlight() {
+          if [[ $KEYS == [[:print:]] ]]; then
+              region_highlight=()
+          fi
+      }
+  fi
 
   #
   # Check if $1 denotes the name of a callable function, i.e. it is fully
