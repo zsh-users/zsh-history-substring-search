@@ -215,6 +215,27 @@ default values.
 * `HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_TIMEOUT` is a global variable that
   defines a timeout in seconds for clearing the search highlight.
 
+* `HISTORY_SUBSTRING_SEARCH_MATCH_FUNCTION` is a global variable that defines
+  the name of a function for getting matches from custom history providers.
+
+  For example, to integrate with [`histdb`](https://github.com/larkery/zsh-histdb)
+  the following function could be used:
+
+  ```bash
+  function _history-substring-get-raw-matches-histdb {
+    local SEP=$(printf $'\1')  # column separator
+    local results=$(
+      histdb --sep ${SEP} ${_history_substring_search_query_parts[@]} |
+        tail -n +2 |  # kill header
+        sed 's/\(.\+\)[^\x01]\x01/&\x00/' |  # add \0 to separate records
+        cut -d ${SEP} -f 4  # get the command column
+    )
+    _history_substring_search_raw_matches=(${(ps:\0:)results})
+    _history_substring_search_raw_matches=(${_history_substring_search_raw_matches[@]%$'\n'})
+  }
+
+  HISTORY_SUBSTRING_SEARCH_MATCH_FUNCTION="_history-substring-get-raw-matches-histdb"
+  ```
 
 History
 ------------------------------------------------------------------------------
